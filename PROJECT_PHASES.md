@@ -54,7 +54,7 @@
 ## Phase 1 — Core Platform Backbone (Week 1)
 
 - **Objectives**: Establish data model, authentication, and realtime plumbing.
-- **Deliverables**: Prisma schema, migrations, seeded dev data, Socket.IO scaffolding.
+- **Deliverables**: Prisma schema, migrations, seeded dev data, Socket.IO scaffolding, shared UI foundation.
 - **Steps**:
   1. Model entities Event, Station, Donor, Appointment, Checkin, Feedback, Point, Badge, RewardItem, Redemption.
   2. Implement Prisma migrations; seed sample event, stations, donor tokens.
@@ -67,6 +67,7 @@
 - Expose `GET /api/events` using the new Prisma access helpers to unblock kiosk/console UIs.
 - Wire a Socket.IO server endpoint under `/api/socket` with simple connection logging.
 - Scaffold admin/volunteer layout (App Router nested routes) consuming the events API.
+- Integrate Tailwind CSS tokens + Shadcn UI components; swap admin overview/detail to shared UI primitives.
 
 ## Phase 2 — Donor Journey Experience (Week 2)
 

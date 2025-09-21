@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/db/events";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -26,62 +35,57 @@ export default async function AdminEventDetail({
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
-      <Link
-        href="/admin"
-        className="text-sm font-medium text-blue-600 hover:text-blue-500"
-      >
-        ← Back to events
-      </Link>
+      <Button asChild variant="ghost" size="sm" className="w-max px-0 text-sm">
+        <Link href="/admin">← Back to events</Link>
+      </Button>
 
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
-          {event.name}
-        </h1>
-        <div className="text-sm text-zinc-600 dark:text-zinc-300">
-          {formatDate(new Date(event.startAt))}
-          {event.endAt ? ` – ${formatDate(new Date(event.endAt))}` : ""}
-        </div>
-        <div className="text-sm text-zinc-600 dark:text-zinc-300">
-          Target units: <span className="font-semibold">{event.targetUnits}</span>
-        </div>
-        <div className="text-sm text-zinc-600 dark:text-zinc-300">
-          Active stations: {activeStations} / {event.stations.length}
-        </div>
-      </header>
-
-      <section className="rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="border-b border-zinc-200 px-5 py-3 text-sm font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-          Stations
-        </div>
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-          {event.stations.map((station) => (
-            <li key={station.id} className="flex items-center justify-between px-5 py-4">
-              <div>
-                <div className="text-base font-semibold text-zinc-900 dark:text-zinc-50">
-                  {station.type}
-                </div>
-                <div className="text-sm text-zinc-600 dark:text-zinc-300">
-                  Status: {station.isActive ? "Active" : "Paused"}
-                </div>
-              </div>
-              <span
-                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                  station.isActive
-                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200"
-                    : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                }`}
-              >
-                {station.isActive ? "Active" : "Paused"}
-              </span>
-            </li>
-          ))}
-          {event.stations.length === 0 ? (
-            <li className="px-5 py-6 text-sm text-zinc-500">
-              No stations configured yet.
-            </li>
-          ) : null}
-        </ul>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>{event.name}</CardTitle>
+          <CardDescription>
+            {formatDate(new Date(event.startAt))}
+            {event.endAt ? ` – ${formatDate(new Date(event.endAt))}` : ""}
+          </CardDescription>
+          <div className="text-sm text-muted-foreground">
+            Target units: <span className="font-semibold text-foreground">{event.targetUnits}</span>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Active stations: {activeStations} / {event.stations.length}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Stations
+            </h2>
+            <ul className="space-y-3">
+              {event.stations.map((station) => (
+                <li
+                  key={station.id}
+                  className="flex items-center justify-between rounded-md border border-border bg-card px-4 py-3"
+                >
+                  <div>
+                    <div className="text-base font-semibold capitalize">
+                      {station.type.toLowerCase()}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Status: {station.isActive ? "Active" : "Paused"}
+                    </div>
+                  </div>
+                  <Badge variant={station.isActive ? "success" : "outline"}>
+                    {station.isActive ? "Active" : "Paused"}
+                  </Badge>
+                </li>
+              ))}
+              {event.stations.length === 0 ? (
+                <li className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+                  No stations configured yet.
+                </li>
+              ) : null}
+            </ul>
+          </section>
+        </CardContent>
+      </Card>
     </main>
   );
 }

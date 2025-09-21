@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { Server as IOServer } from "socket.io";
 import type { Server as HTTPServer } from "http";
 import { emitTelemetry } from "@/lib/telemetry";
+import { registerIO } from "@/lib/realtime/server";
 
 export const config = {
   api: {
@@ -26,6 +27,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
         methods: ["GET", "POST"],
       },
     });
+
+    registerIO(io);
 
     io.on("connection", (socket) => {
       emitTelemetry({

@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StationsPanel } from "./stations-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -59,31 +59,7 @@ export default async function AdminEventDetail({
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Stations
             </h2>
-            <ul className="space-y-3">
-              {event.stations.map((station) => (
-                <li
-                  key={station.id}
-                  className="flex items-center justify-between rounded-md border border-border bg-card px-4 py-3"
-                >
-                  <div>
-                    <div className="text-base font-semibold capitalize">
-                      {station.type.toLowerCase()}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Status: {station.isActive ? "Active" : "Paused"}
-                    </div>
-                  </div>
-                  <Badge variant={station.isActive ? "success" : "outline"}>
-                    {station.isActive ? "Active" : "Paused"}
-                  </Badge>
-                </li>
-              ))}
-              {event.stations.length === 0 ? (
-                <li className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-                  No stations configured yet.
-                </li>
-              ) : null}
-            </ul>
+            <StationsPanel stations={event.stations} />
           </section>
         </CardContent>
       </Card>

@@ -25,6 +25,8 @@ Regenerate the local SQLite DB any time with:
 ```bash
 npm run db:push
 npm run db:seed
+# apply migrations in deployment pipelines
+npm run db:migrate
 ```
 
 ## Realtime & Notifications

@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Appointment status values: BOOKED | CHECKED_IN | SCREENING | DONOR | DONE | NO_SHOW
+model Event {
+  id           String        @id @default(cuid())
+  name         String
+  targetUnits  Int
+  startAt      DateTime
+  endAt        DateTime?
+  appointments Appointment[]
+  stations     Station[]
+  feedback     Feedback[]
+  rewardItems  RewardItem[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Station {
+  id           String        @id @default(cuid())
+  eventId      String
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  /// Station type values: SCREENING | DONOR
+  type         String
+  isActive     Boolean       @default(true)
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Donor {
+  id              String        @id @default(cuid())
+  name            String
+  phoneHash       String        @unique
+  bloodType       String?
+  lastDonationAt  DateTime?
+  appointments    Appointment[]
+  feedback        Feedback[]
+  points          Point[]
+  badges          Badge[]
+  redemptions     Redemption[]
+  teamMemberships TeamMember[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Appointment {
+  id        String     @id @default(cuid())
+  eventId   String
+  donorId   String
+  slotTime  DateTime
+  /// Appointment status values: BOOKED | CHECKED_IN | SCREENING | DONOR | DONE | NO_SHOW
+  status    String     @default("BOOKED")
+  stationId String?
+  station   Station?   @relation(fields: [stationId], references: [id])
+  event     Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  donor     Donor      @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  checkin   Checkin?
+  screening Screening?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Screening {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  answers       String
+  riskFlags     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Checkin {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  timestamp     DateTime    @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  eventId   String
+  donorId   String?
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  donor     Donor?   @relation(fields: [donorId], references: [id])
+  csat      Int
+  nps       Int
+  comment   String?
+  createdAt DateTime @default(now())
+}
+
+model Point {
+  id        String   @id @default(cuid())
+  donorId   String
+  donor     Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  value     Int
+  /// Point source values: SIGN_UP | ATTEND | COMPLETE | REFERRAL
+  source    String
+  createdAt DateTime @default(now())
+}
+
+model Badge {
+  id        String   @id @default(cuid())
+  donorId   String
+  donor     Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  /// Badge keys: FIRST_DROP | THREES_A_CHARM | ON_TIME
+  key       String
+  awardedAt DateTime @default(now())
+}
+
+model RewardItem {
+  id          String       @id @default(cuid())
+  eventId     String
+  event       Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  cost        Int
+  stock       Int
+  isActive    Boolean      @default(true)
+  sponsorId   String?
+  redemptions Redemption[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Redemption {
+  id           String     @id @default(cuid())
+  donorId      String
+  rewardItemId String
+  donor        Donor      @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  rewardItem   RewardItem @relation(fields: [rewardItemId], references: [id], onDelete: Cascade)
+  cost         Int
+  /// Redemption status values: RESERVED | FULFILLED | CANCELLED
+  status       String     @default("RESERVED")
+  fulfilledBy  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Team {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  members   TeamMember[]
+  points    TeamPoint[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  donorId  String
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  donor    Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  joinedAt DateTime @default(now())
+
+  @@unique([teamId, donorId])
+}
+
+model TeamPoint {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  value     Int
+  note      String?
+  createdAt DateTime @default(now())
+}

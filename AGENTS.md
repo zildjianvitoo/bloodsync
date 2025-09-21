@@ -102,7 +102,7 @@
 ## Architecture & Deployment Assumptions
 
 - **Stack**: Next.js 15 (App Router) front-end, Prisma ORM, SQLite, Tailwind v4, Shadcn UI kit (forms/layout), React Query, Socket.IO realtime, PWA with Service Worker.
-- **Hosting Targets**: Frontend (Vercel/Netlify), Backend (Railway/Render/VPS), Database (Supabase/RDS), optional Redis for queue/state caching.
+- **Hosting Targets**: Frontend (Vercel/Netlify), Backend (Railway/Render/VPS), Database (SQLite on persistent volume), optional Redis for queue/state caching.
 - **Security Baseline**: HTTPS everywhere, strict CORS, JWT with roles, rate limiting, audit logging, double-entry reward ledger to prevent fraud.
 
 ## Roadmap Focus
@@ -112,5 +112,5 @@
 
 ## Suggested Workflow Practices
 
-- Commit and push after completing each task, using concise conventional commit messages (e.g., `feat: add friend request flow`).
+- Commit and push after completing each task. Every commit **must** use a Conventional Commit message (`type: short summary`, e.g., `feat: add friend request flow`).
 - Centralize fetch/service logic under `lib/api/` modules so components stay declarative and reuse consistent request helpers.

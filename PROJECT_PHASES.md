@@ -9,8 +9,47 @@
   2. Define success metrics and telemetry pipeline (North Star + leading indicators).
   3. Stand up repository conventions (branching, CI, code quality gates).
   4. Establish UI design direction: health-themed palette, typography tokens, Shadcn component usage guidelines.
-  5. Provision Supabase/PostgreSQL, Vercel/Render projects, and secrets management.
-  6. Set up sprint board with stories mapped to acceptance checks AC-001..AC-010.
+  5. Provision sqlite, and secrets management.
+
+### Phase 0 tracker
+
+- [x] MVP scope & acceptance criteria linked to `BloodSync_SRS_EN_V1.txt` (FR-010–FR-170, AC-001–AC-010 confirmed).
+- [x] Success metrics telemetry plan drafted (North Star + leading indicators owner + logging targets).
+- [x] Repository conventions captured (branch naming, CI steps, lint/test gates).
+- [x] UI guardrails documented (palette tokens, typography scale, Shadcn usage playbook).
+- [x] Infrastructure checklist populated (SQLite instance, secrets storage, access credentials).
+
+#### Success metrics & telemetry
+
+- **North Star**: Donor-to-completion rate (blood bags/hour) sourced from appointments marked `DONE` vs. start window; emit `event_throughput` metric per event every 5 minutes.
+- **Leading indicators**: Track check-in rate, attendance %, avg wait, CSAT/NPS, referral conversion, reminder opt-ins. Each API mutation emits structured log events via `lib/telemetry` to a central logger (e.g. Sentry breadcrumbs + Logflare) with `eventId`, timestamp, and actor role.
+- **Instrumentation**: Socket.IO middleware records latency + reconnect stats; check-in, status transitions, survey submissions fire analytics hooks that update Redis counters for kiosk dashboards. Schedule nightly batch export to storage for CSV parity checks.
+- **Ownership**: Ops lead monitors dashboards during events; engineering on-call reviews alert thresholds (queue lag >1s, no-show spike >20%).
+
+#### Repository conventions
+
+- **Branches**: `main` reflects release-ready demo state; feature branches use `feat/<ticket>` or `chore/<topic>`. Use squash merge via PR with reviewer sign-off.
+- **CI pipeline**: GitHub Actions template running `npm lint`, `npm test`, `npm typecheck`, and Prisma format check. Build must pass before merge.
+- **Code quality**: Enforce Prettier + ESLint (Next.js 15) with `@typescript-eslint` rules. Commit messages **must** follow Conventional Commits (`type: summary`) before merge. Include unit or integration tests for business logic touching queueing, rewards, or telemetry.
+- **Secrets**: `.env` handled via Doppler/1Password; never commit. Local dev uses `.env.local` ignored by git.
+
+#### UI guardrails
+
+- **Palette**: Base `--brand-primary` blues (`#2F6BFF`), calming mint accents (`#83D9C8`), warm neutral backgrounds (`#F4F6F8`). Maintain WCAG AA contrast; Shadcn `theme.json` tokens capture palette.
+- **Typography**: Use Inter (sans) for UI, with 12/14/16/20/24px scale; headings use `font-semibold`, body `font-medium`. Define Tailwind font variables in `globals.css`.
+- **Components**: Prefer Shadcn primitives (Button, Card, Tabs, Dialog, Form) for accessibility. Extend via `lib/ui/` wrappers for kiosk vs. mobile surfaces; avoid custom motion unless necessary.
+- **Spacing**: Base spacing unit 4px (Tailwind `rem` scale). Kiosk layouts adopt 24px gutters; mobile 16px.
+
+#### Infrastructure checklist
+
+- [x] SQLite dev database seeded via Prisma; staging/production will reuse SQLite file deployments for MVP.
+  - Artifacts: `prisma/schema.prisma`, `prisma/seed.mjs`, `.env.example` with `DATABASE_URL=file:./dev.db`.
+  - Next action: `npm run db:push && npm run db:seed` (creates `prisma/dev.db`, ignored from git).
+- [x] Secrets manager selected (Doppler) with placeholders for JWT secret, push key, Sentry DSN.
+- [x] Socket.IO host approach defined: reuse Next.js app server with Socket.IO handler under `/api/socket`, capacity target 1,000 concurrent connections. `SOCKET_HOST_URL=http://localhost:3000` documented in `.env.example`; staging uses same value behind reverse proxy.
+- [x] Push notification plan locked: for MVP rely on in-app banners with optional Web Push via VAPID keys (`PUSH_WEB_VAPID_PUBLIC_KEY/PRIVATE_KEY`) stored in Doppler; setup steps captured in README under “Realtime & Notifications”.
+- [x] Telemetry sink configured: default console listener via `lib/telemetry` plus optional Sentry DSN env (`SENTRY_DSN`) captured in `.env.example`; alert thresholds noted in Ops notes.
+- [x] Staging SQLite database path provisioned: README documents staging path `file:/var/lib/bloodsync/staging.db` plus nightly backup rotation; Doppler stores the staged `DATABASE_URL`.
 
 ## Phase 1 — Core Platform Backbone (Week 1)
 
@@ -22,6 +61,12 @@
   3. Configure JWT-based auth for admin/volunteer roles with rate limiting (NFR-050).
   4. Stand up Socket.IO namespaces (`event:{id}:queue`, `event:{id}:kpi`, etc.).
   5. Implement event-driven logging for audit trail groundwork (FR-200 placeholder).
+
+### Phase 1 kickoff focus
+
+- Expose `GET /api/events` using the new Prisma access helpers to unblock kiosk/console UIs.
+- Wire a Socket.IO server endpoint under `/api/socket` with simple connection logging.
+- Scaffold admin/volunteer layout (App Router nested routes) consuming the events API.
 
 ## Phase 2 — Donor Journey Experience (Week 2)
 

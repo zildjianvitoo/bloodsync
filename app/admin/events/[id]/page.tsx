@@ -23,9 +23,10 @@ function formatDate(date: Date) {
 export default async function AdminEventDetail({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const event = await getEventById(params.id);
+  const { id } = await params;
+  const event = await getEventById(id);
 
   if (!event) {
     notFound();

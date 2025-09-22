@@ -86,7 +86,7 @@ export function LoginForm({
           control={form.control}
           name="passcode"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col gap-2">
               <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Passcode
               </FormLabel>

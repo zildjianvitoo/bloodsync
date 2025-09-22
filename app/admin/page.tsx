@@ -14,7 +14,7 @@ export default async function AdminDashboard() {
   return (
     <>
       <TopNav role="admin" />
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
+    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6 pt-10">
       <header className="flex flex-col gap-1">
         <h1 className="text-3xl font-semibold">Admin Overview</h1>
         <p className="text-sm text-muted-foreground">

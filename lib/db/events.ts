@@ -32,3 +32,30 @@ export async function getEventById(eventId: string) {
     },
   });
 }
+
+type CreateEventInput = {
+  name: string;
+  targetUnits: number;
+  startAt: Date;
+  endAt?: Date | null;
+};
+
+export async function createEventWithStations(
+  eventInput: CreateEventInput,
+  stations: { type: "SCREENING" | "DONOR"; isActive?: boolean }[]
+) {
+  return prisma.event.create({
+    data: {
+      ...eventInput,
+      stations: {
+        create: stations.map((station) => ({
+          type: station.type,
+          isActive: station.isActive ?? true,
+        })),
+      },
+    },
+    include: {
+      stations: true,
+    },
+  });
+}

@@ -34,7 +34,7 @@ export default async function VolunteerPage() {
         <div className="absolute right-0 top-1/3 h-72 w-72 rounded-full bg-accent/20 blur-3xl" />
       </div>
       <TopNav role="volunteer" />
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 pb-16 pt-12">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 pb-16 pt-16">
         <AnimatedHeading
           eyebrow="Volunteer command"
           title="Stay synced with station leaders and donors without leaving your post."

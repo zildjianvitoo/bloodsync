@@ -40,7 +40,7 @@ export default async function AdminEventDetail({
   return (
     <>
       <TopNav role="admin" />
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6 pt-10">
       <Button asChild variant="ghost" size="sm" className="w-max px-0 text-sm">
         <Link href="/admin">← Back to events</Link>
       </Button>

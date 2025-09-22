@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StationsPanel } from "@/components/stations/stations-panel";
+import { TopNav } from "@/components/navigation/top-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,9 @@ export default async function AdminEventDetail({
   const activeStations = event.stations.filter((station) => station.isActive).length;
 
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
+    <>
+      <TopNav role="admin" />
+      <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
       <Button asChild variant="ghost" size="sm" className="w-max px-0 text-sm">
         <Link href="/admin">← Back to events</Link>
       </Button>
@@ -65,6 +68,7 @@ export default async function AdminEventDetail({
           </section>
         </CardContent>
       </Card>
-    </main>
+      </main>
+    </>
   );
 }

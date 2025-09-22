@@ -3,6 +3,7 @@ import { listEvents } from "@/lib/db/events";
 import { requireRole } from "@/lib/auth/session";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { TopNav } from "@/components/navigation/top-nav";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,8 @@ export default async function AdminDashboard() {
   const events = await listEvents();
 
   return (
+    <>
+      <TopNav role="admin" />
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-3xl font-semibold">Admin Overview</h1>
@@ -53,5 +56,6 @@ export default async function AdminDashboard() {
         </CardContent>
       </Card>
     </main>
+    </>
   );
 }

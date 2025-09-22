@@ -57,10 +57,7 @@ export default async function Home() {
               description="Keep every donor informed, every volunteer synchronized, and every organizer equipped with actionable insights to increase completed bags per hour."
             />
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg">
-                <Link href="/admin">Open admin console</Link>
-              </Button>
-              <Button asChild variant="secondary" size="lg">
+              <Button asChild size="lg" variant="secondary">
                 <Link href="/volunteer">Volunteer workspace</Link>
               </Button>
             </div>

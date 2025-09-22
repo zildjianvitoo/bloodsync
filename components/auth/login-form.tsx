@@ -52,7 +52,9 @@ export function LoginForm({
       });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: "Login failed" }));
+        const data = await response
+          .json()
+          .catch(() => ({ error: "Login failed" }));
         setServerError(data.error ?? "Login failed");
         return;
       }
@@ -84,7 +86,7 @@ export function LoginForm({
           control={form.control}
           name="passcode"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col gap-2">
               <FormLabel className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Passcode
               </FormLabel>
@@ -97,13 +99,17 @@ export function LoginForm({
                   {...field}
                 />
               </FormControl>
-              <FormDescription>Provided by the operations lead on event day.</FormDescription>
+              <FormDescription>
+                Provided by the operations lead on event day.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {serverError ? <p className="text-sm text-destructive">{serverError}</p> : null}
+        {serverError ? (
+          <p className="text-sm text-destructive">{serverError}</p>
+        ) : null}
 
         <Button type="submit" disabled={pending} className="w-full">
           {pending ? "Signing in…" : "Sign in"}

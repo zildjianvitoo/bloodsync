@@ -63,7 +63,7 @@
 - **Performance**: Support 500 kiosk sessions and 1,000 concurrent sockets.
 - **Internationalization**: Ready for Indonesian and English UI copy.
 - **PWA**: Installable with offline cache for ticket/turn info (read-only).
-- **UI Styling**: Calm health-clinic palette, high legibility, consistent spacing; Shadcn components for key forms and inputs to ensure accessibility.
+- **UI Styling**: Calm health-clinic palette, high legibility, consistent spacing; Shadcn components for key forms and inputs to ensure accessibility. Forms should be implemented with React Hook Form + Shadcn Form primitives for consistent validation UX.
 
 ## Data Model Snapshot
 

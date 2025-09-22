@@ -1,4 +1,5 @@
 import { listStationsWithEvent } from "@/lib/db/stations";
+import { requireRole } from "@/lib/auth/session";
 import {
   Card,
   CardContent,
@@ -15,6 +16,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 export const dynamic = "force-dynamic";
 
 export default async function VolunteerPage() {
+  await requireRole("volunteer");
   const stations = await listStationsWithEvent();
 
   const grouped = stations.reduce<Record<string, typeof stations>>((acc, station) => {

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventById } from "@/lib/db/events";
+import { requireRole } from "@/lib/auth/session";
 import {
   Card,
   CardContent,
@@ -25,6 +26,7 @@ export default async function AdminEventDetail({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole("admin");
   const { id } = await params;
   const event = await getEventById(id);
 

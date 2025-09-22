@@ -19,6 +19,7 @@ Copy `.env.example` to `.env.local` and adjust values as needed:
 - `SOCKET_HOST_URL=http://localhost:3000`
 - `NEXT_PUBLIC_SOCKET_HOST_URL=http://localhost:3000`
 - Optional VAPID + Sentry keys.
+- `ADMIN_PASSCODE` and `VOLUNTEER_PASSCODE` for console authentication.
 
 Regenerate the local SQLite DB any time with:
 

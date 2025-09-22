@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { listEvents } from "@/lib/db/events";
+import { requireRole } from "@/lib/auth/session";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
+  await requireRole("admin");
   const events = await listEvents();
 
   return (

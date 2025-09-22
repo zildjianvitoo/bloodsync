@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { pushInAppNotification } from "@/lib/realtime/in-app";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const eventSchema = z.object({
   name: z.string().min(3, "Event name is required"),
@@ -40,14 +40,6 @@ function toLocalDateTimeInput(date: Date) {
 export function EventForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [status, setStatus] = useState<
-    | {
-        type: "info" | "success" | "destructive";
-        title: string;
-        description?: string;
-      }
-    | null
-  >(null);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -62,10 +54,8 @@ export function EventForm() {
   });
 
   function onSubmit(values: EventFormValues) {
-    setStatus({
-      type: "info",
-      title: "Creating event",
-      description: "Generating stations and syncing consoles…",
+    const toastId = toast.loading("Creating event…", {
+      description: "Generating stations and syncing consoles",
     });
     startTransition(async () => {
       const payload = {
@@ -85,10 +75,9 @@ export function EventForm() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({ error: "Failed to create event" }));
-        setStatus({
-          type: "destructive",
-          title: "Could not create event",
+        toast.error("Could not create event", {
           description: data.error ?? "Something went wrong. Please try again.",
+          id: toastId,
         });
         form.setError("name", { type: "server", message: data.error ?? "Failed to create event" });
         return;
@@ -100,10 +89,9 @@ export function EventForm() {
         message: "Stations were generated and are ready for volunteers.",
         level: "success",
       });
-      setStatus({
-        type: "success",
-        title: "Event ready",
+      toast.success("Event ready", {
         description: "Redirecting you to the event dashboard…",
+        id: toastId,
       });
       router.replace(`/admin/events/${data.event.id}`);
       router.refresh();
@@ -118,13 +106,6 @@ export function EventForm() {
           Configure event basics and initial station layout. Volunteers can adjust in real time.
         </p>
       </div>
-
-      {status ? (
-        <Alert variant={status.type === "destructive" ? "destructive" : status.type === "success" ? "success" : "info"}>
-          <AlertTitle>{status.title}</AlertTitle>
-          {status.description ? <AlertDescription>{status.description}</AlertDescription> : null}
-        </Alert>
-      ) : null}
 
       <Form {...form}>
         <form

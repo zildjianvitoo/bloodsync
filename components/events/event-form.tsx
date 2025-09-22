@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { pushInAppNotification } from "@/lib/realtime/in-app";
-import { toast } from "sonner";
 
 const eventSchema = z.object({
   name: z.string().min(3, "Event name is required"),
@@ -54,9 +53,6 @@ export function EventForm() {
   });
 
   function onSubmit(values: EventFormValues) {
-    const toastId = toast.loading("Creating event…", {
-      description: "Generating stations and syncing consoles",
-    });
     startTransition(async () => {
       const payload = {
         ...values,
@@ -75,11 +71,12 @@ export function EventForm() {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({ error: "Failed to create event" }));
-        toast.error("Could not create event", {
-          description: data.error ?? "Something went wrong. Please try again.",
-          id: toastId,
-        });
         form.setError("name", { type: "server", message: data.error ?? "Failed to create event" });
+        pushInAppNotification({
+          level: "error",
+          title: "Could not create event",
+          message: data.error ?? "Something went wrong. Please try again.",
+        });
         return;
       }
 
@@ -88,10 +85,6 @@ export function EventForm() {
         title: "Event created",
         message: "Stations were generated and are ready for volunteers.",
         level: "success",
-      });
-      toast.success("Event ready", {
-        description: "Redirecting you to the event dashboard…",
-        id: toastId,
       });
       router.replace(`/admin/events/${data.event.id}`);
       router.refresh();

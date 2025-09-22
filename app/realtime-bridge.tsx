@@ -12,15 +12,22 @@ export function RealtimeBridge() {
 
   useEffect(() => {
     initializeRealtime();
+    const timeouts = new Set<number>();
 
     const unsubscribe = subscribeNotifications((notification) => {
       setNotifications((prev) => {
         const next = [notification, ...prev];
         return next.slice(0, 3);
       });
+
+      const timeout = window.setTimeout(() => {
+        setNotifications((prev) => prev.filter((item) => item.id !== notification.id));
+        }, 3500);
+      timeouts.add(timeout);
     });
 
     return () => {
+      timeouts.forEach((timeout) => window.clearTimeout(timeout));
       unsubscribe();
     };
   }, []);

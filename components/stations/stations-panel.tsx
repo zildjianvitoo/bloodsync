@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,11 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
   const [pendingStation, setPendingStation] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [localStations, setLocalStations] = useState(stations);
+  const [recentlyAdvanced, setRecentlyAdvanced] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setLocalStations(stations);
+  }, [stations]);
 
   async function toggleStation(stationId: string, isActive: boolean) {
     const previous = localStations;
@@ -74,6 +79,15 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
       startTransition(() => {
         router.refresh();
       });
+
+      setRecentlyAdvanced((prev) => ({ ...prev, [stationId]: true }));
+      setTimeout(() => {
+        setRecentlyAdvanced((prev) => {
+          const next = { ...prev };
+          delete next[stationId];
+          return next;
+        });
+      }, 2500);
     } catch (error) {
       console.error(error);
     } finally {
@@ -82,17 +96,19 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
   }
 
   return (
-    <CardContent className="space-y-3">
+    <CardContent className="space-y-4 p-6">
       {localStations.map((station) => {
         const counts = station.appointments.reduce<Record<string, number>>((acc, appointment) => {
           acc[appointment.status] = (acc[appointment.status] ?? 0) + 1;
           return acc;
         }, {});
+        const isAdvancing = isPending && pendingStation === station.id;
+        const showAdvanced = recentlyAdvanced[station.id];
 
         return (
           <div
             key={station.id}
-            className="flex flex-col gap-4 rounded-xl border border-border bg-background/70 p-4 transition-shadow hover:shadow-lg"
+            className="flex flex-col gap-4 rounded-2xl border border-border bg-background/80 p-5 transition-shadow hover:-translate-y-0.5 hover:shadow-xl"
           >
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -110,9 +126,16 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
                   ))}
                 </div>
               </div>
-              <Badge variant={station.isActive ? "success" : "outline"}>
-                {station.isActive ? "Active" : "Paused"}
-              </Badge>
+              <div className="flex flex-col items-end gap-2">
+                <Badge variant={station.isActive ? "success" : "outline"}>
+                  {station.isActive ? "Active" : "Paused"}
+                </Badge>
+                {showAdvanced ? (
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                    Advanced
+                  </span>
+                ) : null}
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -125,10 +148,10 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
               </Button>
               <Button
                 size="sm"
-                disabled={isPending && pendingStation === station.id}
+                disabled={isAdvancing}
                 onClick={() => advanceQueue(station.id)}
               >
-                {isPending && pendingStation === station.id ? "Advancing…" : "Advance donor"}
+                {isAdvancing ? "Advancing…" : "Advance donor"}
               </Button>
             </div>
           </div>

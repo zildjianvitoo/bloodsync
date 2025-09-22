@@ -10,7 +10,25 @@ export async function getEventById(eventId: string) {
   return prisma.event.findUnique({
     where: { id: eventId },
     include: {
-      stations: true,
+      stations: {
+        include: {
+          appointments: {
+            where: {
+              status: {
+                in: ["CHECKED_IN", "SCREENING", "DONOR"],
+              },
+            },
+            select: {
+              id: true,
+              status: true,
+              slotTime: true,
+            },
+            orderBy: {
+              slotTime: "asc",
+            },
+          },
+        },
+      },
     },
   });
 }

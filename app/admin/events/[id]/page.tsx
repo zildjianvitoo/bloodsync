@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { StationsPanel } from "./stations-panel";
+import { StationsPanel } from "@/components/stations/stations-panel";
 
 export const dynamic = "force-dynamic";
 

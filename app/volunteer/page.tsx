@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AnimatedHeading } from "@/components/ui/heading";
 import { GlassCard } from "@/components/ui/glass-card";
+import { StationsPanel } from "@/components/stations/stations-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function VolunteerPage() {
           {[
             { label: "Stations active", value: stations.filter((s) => s.isActive).length },
             { label: "Stations paused", value: stations.filter((s) => !s.isActive).length },
-            { label: "Next donor groups", value: "A12 • B07 • C03" },
+            { label: "Donors waiting", value: stations.reduce((acc, s) => acc + s.appointments.length, 0) },
           ].map((item) => (
             <GlassCard key={item.label}>
               <span className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -54,12 +55,12 @@ export default async function VolunteerPage() {
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
-          {Object.values(grouped).map((eventStations) => {
-            const event = eventStations[0]?.event;
-            return (
-              <Card key={event?.id ?? "unknown"} className="overflow-hidden border-border/70 bg-card/90 shadow-xl">
-                <CardHeader>
-                  <CardTitle>{event?.name ?? "Ad-hoc event"}</CardTitle>
+        {Object.values(grouped).map((eventStations) => {
+          const event = eventStations[0]?.event;
+          return (
+            <Card key={event?.id ?? "unknown"} className="overflow-hidden border-border/70 bg-card/90 shadow-xl">
+              <CardHeader>
+                <CardTitle>{event?.name ?? "Ad-hoc event"}</CardTitle>
                   <CardDescription>
                     {event?.startAt
                       ? new Date(event.startAt).toLocaleString()
@@ -67,39 +68,7 @@ export default async function VolunteerPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {eventStations.map((station) => (
-                    <div
-                      key={station.id}
-                      className="rounded-xl border border-border bg-background/70 p-4 transition-shadow hover:shadow-lg"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <div className="text-base font-semibold capitalize text-foreground">
-                            {station.type.toLowerCase()}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Station ID: {station.id.slice(0, 6)}
-                          </div>
-                        </div>
-                        <Badge variant={station.isActive ? "success" : "outline"}>
-                          {station.isActive ? "Active" : "Paused"}
-                        </Badge>
-                      </div>
-                      <div className="mt-4 flex items-center gap-3">
-                        <Button size="sm" variant="outline" className="w-full" disabled>
-                          Advance donor
-                        </Button>
-                        <Button size="sm" variant="ghost" className="w-full" disabled>
-                          Broadcast update
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  {eventStations.length === 0 ? (
-                    <div className="rounded-md border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-                      No stations assigned yet.
-                    </div>
-                  ) : null}
+                  <StationsPanel stations={eventStations} />
                 </CardContent>
                 <CardFooter className="justify-between text-xs text-muted-foreground">
                   <span>Tip: align with screening lead every 30 minutes.</span>

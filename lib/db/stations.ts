@@ -10,6 +10,21 @@ export function listStationsWithEvent() {
           startAt: true,
         },
       },
+      appointments: {
+        where: {
+          status: {
+            in: ["CHECKED_IN", "SCREENING", "DONOR"],
+          },
+        },
+        select: {
+          id: true,
+          status: true,
+          slotTime: true,
+        },
+        orderBy: {
+          slotTime: "asc",
+        },
+      },
     },
     orderBy: [{ event: { startAt: "asc" } }, { type: "asc" }],
   });

@@ -59,3 +59,26 @@ export async function createEventWithStations(
     },
   });
 }
+
+export async function updateEventBasics(
+  id: string,
+  data: Partial<Pick<CreateEventInput, "name" | "targetUnits" | "startAt" | "endAt">>
+) {
+  return prisma.event.update({
+    where: { id },
+    data,
+  });
+}
+
+export async function addStationToEvent(
+  eventId: string,
+  station: { type: "SCREENING" | "DONOR"; isActive?: boolean }
+) {
+  return prisma.station.create({
+    data: {
+      eventId,
+      type: station.type,
+      isActive: station.isActive ?? true,
+    },
+  });
+}

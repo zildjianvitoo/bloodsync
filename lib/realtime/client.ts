@@ -47,6 +47,14 @@ function ensureSocket() {
     });
   });
 
+  socket.on("donor:checked_in", (payload: { eventName: string; queuePosition: number }) => {
+    pushInAppNotification({
+      title: "New donor just checked in",
+      message: `${payload.eventName} · Queue #${payload.queuePosition}`,
+      level: "info",
+    });
+  });
+
   return socket;
 }
 

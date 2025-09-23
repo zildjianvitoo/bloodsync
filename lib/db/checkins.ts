@@ -3,6 +3,7 @@ import { emitTelemetry } from "@/lib/telemetry";
 import type { EventQueuePayload } from "@/lib/db/queue";
 import { getEventQueue } from "@/lib/db/queue";
 import { broadcastEventQueue } from "@/lib/realtime/queue";
+import { getIO } from "@/lib/realtime/server";
 
 const AVERAGE_SCREENING_MINUTES = 12;
 
@@ -20,6 +21,7 @@ type CheckInResult = {
   };
   event: EventQueuePayload["event"];
   stats: EventQueuePayload["stats"];
+  checkedInAt: string;
 };
 
 class CheckInError extends Error {
@@ -183,6 +185,23 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
     },
   });
 
+  emitTelemetry({
+    name: "notify:donor_checked_in",
+    actorRole: "system",
+    context: {
+      eventId,
+      appointmentId: updatedAppointment.id,
+      queuePosition: queueNumber,
+      stationId: assignedStationId,
+    },
+  });
+
+  getIO()?.emit("donor:checked_in", {
+    eventId,
+    eventName: queue.event.name,
+    queuePosition: queueNumber,
+  });
+
   await broadcastEventQueue(eventId, queue);
 
   return {
@@ -196,6 +215,7 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
     },
     event: queue.event,
     stats: queue.stats,
+    checkedInAt: new Date().toISOString(),
   };
 }
 

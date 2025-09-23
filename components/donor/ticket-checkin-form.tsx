@@ -54,6 +54,7 @@ type TicketPayload = {
     donor: number;
     done: number;
   };
+  checkedInAt: string;
 };
 
 type EventOption = {
@@ -276,7 +277,8 @@ function TicketDetails({ payload }: TicketDetailsProps) {
   const etaText = payload.ticket.etaMinutes <= 0 ? "Ready now" : `${payload.ticket.etaMinutes} min`;
   const eventStart = new Date(payload.event.startAt);
   const eventWindow = format(eventStart, "MMM d • hh:mm a");
-  
+  const checkedInAt = new Date(payload.checkedInAt);
+
   const waitSummary = payload.ticket.peopleInFront === 0
     ? "You're next in line"
     : `${payload.ticket.peopleInFront} donor${payload.ticket.peopleInFront === 1 ? "" : "s"} ahead of you`;
@@ -319,6 +321,16 @@ function TicketDetails({ payload }: TicketDetailsProps) {
           <dd className="text-base font-semibold text-foreground">{eventWindow}</dd>
           <p className="text-xs text-muted-foreground">
             Targeting {payload.event.targetUnits} completed bags today. Currently {payload.stats.done} collected.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 bg-background/80 px-4 py-3">
+          <dt className="text-xs uppercase tracking-wide text-muted-foreground">Checked in</dt>
+          <dd className="text-base font-semibold text-foreground">
+            {format(checkedInAt, "hh:mm a")}
+          </dd>
+          <p className="text-xs text-muted-foreground">
+            Keep this tab open; we&apos;ll automatically update your place if volunteers move the queue.
           </p>
         </div>
       </dl>

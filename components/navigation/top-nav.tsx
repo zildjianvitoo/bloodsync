@@ -6,12 +6,16 @@ import { useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const sharedLinks = [{ href: "/ticket", label: "Ticket lookup" }];
+
 const adminLinks = [
   { href: "/admin", label: "Overview" },
+  ...sharedLinks,
 ];
 
 const volunteerLinks = [
   { href: "/volunteer", label: "Stations" },
+  ...sharedLinks,
 ];
 
 export function TopNav({ role }: { role: "admin" | "volunteer" }) {

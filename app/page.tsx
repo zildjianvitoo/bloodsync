@@ -60,7 +60,14 @@ export default async function Home() {
               <Button asChild size="lg" variant="secondary">
                 <Link href="/volunteer">Volunteer workspace</Link>
               </Button>
+              <Button asChild size="lg">
+                <Link href="/ticket">Check my donor ticket</Link>
+              </Button>
             </div>
+            <p className="max-w-xl text-sm text-muted-foreground">
+              Donors: already registered for today&apos;s drive? Enter your confirmation token on the ticket page to see
+              your live queue position, ETA, and station assignment from any device.
+            </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {highlights.map((item) => (
                 <GlassCard key={item.label} className="p-5">

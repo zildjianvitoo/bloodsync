@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { emitTelemetry } from "@/lib/telemetry";
 import { getIO } from "@/lib/realtime/server";
+import { broadcastEventQueue } from "@/lib/realtime/queue";
 
 export async function PATCH(
   request: Request,
@@ -41,6 +42,8 @@ export async function PATCH(
       level: station.isActive ? "success" : "warning",
     });
 
+    await broadcastEventQueue(station.eventId);
+
     return NextResponse.json({ station });
   } catch (error) {
     console.error("PATCH /stations failed", error);
@@ -71,6 +74,8 @@ export async function DELETE(
     getIO()?.emit("station:removed", {
       stationId: station.id,
     });
+
+    await broadcastEventQueue(station.eventId);
 
     return NextResponse.json({ station });
   } catch (error) {

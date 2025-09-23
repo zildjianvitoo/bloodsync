@@ -17,24 +17,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { pushInAppNotification } from "@/lib/realtime/in-app";
+import { formatLocalDateTimeInput } from "@/lib/utils";
 
 const eventSchema = z.object({
   name: z.string().min(3, "Event name is required"),
-  targetUnits: z.coerce.number().int().min(1).max(1000),
+  targetUnits: z.number().int().min(1).max(1000),
   startAt: z.string(),
-  endAt: z.string().optional().nullable(),
-  screeningStations: z.coerce.number().int().min(0).max(10),
-  donorStations: z.coerce.number().int().min(0).max(10),
+  endAt: z
+    .string()
+    .optional()
+    .nullable(),
+  screeningStations: z.number().int().min(0).max(10),
+  donorStations: z.number().int().min(0).max(10),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
-
-function toLocalDateTimeInput(date: Date) {
-  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
-  const local = new Date(date.getTime() - offsetMs);
-  return local.toISOString().slice(0, 16);
-}
 
 export function EventForm() {
   const router = useRouter();
@@ -45,7 +44,7 @@ export function EventForm() {
     defaultValues: {
       name: "",
       targetUnits: 120,
-      startAt: toLocalDateTimeInput(new Date()),
+      startAt: formatLocalDateTimeInput(new Date()),
       endAt: "",
       screeningStations: 2,
       donorStations: 2,
@@ -56,10 +55,7 @@ export function EventForm() {
     startTransition(async () => {
       const payload = {
         ...values,
-        targetUnits: Number(values.targetUnits),
-        screeningStations: Number(values.screeningStations),
-        donorStations: Number(values.donorStations),
-        endAt: values.endAt ? values.endAt : null,
+        endAt: values.endAt && values.endAt.length > 0 ? values.endAt : null,
       };
       const response = await fetch("/api/events", {
         method: "POST",
@@ -126,7 +122,17 @@ export function EventForm() {
                 <FormItem>
                   <FormLabel>Target units</FormLabel>
                   <FormControl>
-                    <Input type="number" min={1} max={1000} {...field} />
+                    <Input
+                      type="number"
+                      min={1}
+                      max={1000}
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        field.onChange(value === "" ? undefined : Number(value));
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -142,7 +148,12 @@ export function EventForm() {
                 <FormItem>
                   <FormLabel>Start time</FormLabel>
                   <FormControl>
-                    <Input type="datetime-local" {...field} />
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={(next) => field.onChange(next ?? "")}
+                      onBlur={field.onBlur}
+                      disabled={pending}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -155,7 +166,13 @@ export function EventForm() {
                 <FormItem>
                   <FormLabel>End time (optional)</FormLabel>
                   <FormControl>
-                    <Input type="datetime-local" {...field} />
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={(next) => field.onChange(next ?? null)}
+                      onBlur={field.onBlur}
+                      disabled={pending}
+                      placeholder="Select end"
+                    />
                   </FormControl>
                   <FormDescription>Leave blank if timing is flexible.</FormDescription>
                   <FormMessage />
@@ -172,7 +189,17 @@ export function EventForm() {
                 <FormItem>
                   <FormLabel>Screening stations</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} max={10} {...field} />
+                    <Input
+                      type="number"
+                      min={0}
+                      max={10}
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        field.onChange(value === "" ? undefined : Number(value));
+                      }}
+                    />
                   </FormControl>
                   <FormDescription>Total screening bays at kickoff.</FormDescription>
                   <FormMessage />
@@ -186,7 +213,17 @@ export function EventForm() {
                 <FormItem>
                   <FormLabel>Donor stations</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} max={10} {...field} />
+                    <Input
+                      type="number"
+                      min={0}
+                      max={10}
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        field.onChange(value === "" ? undefined : Number(value));
+                      }}
+                    />
                   </FormControl>
                   <FormDescription>Bed/chair stations available at start.</FormDescription>
                   <FormMessage />

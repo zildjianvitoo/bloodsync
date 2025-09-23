@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { advanceAppointmentForStation } from "@/lib/db/appointments";
 import { emitTelemetry } from "@/lib/telemetry";
 import { getIO } from "@/lib/realtime/server";
+import { broadcastEventQueue } from "@/lib/realtime/queue";
 
 export async function POST(
   request: Request,
@@ -59,6 +60,8 @@ export async function POST(
     message: `Volunteer advanced donor to ${station.type.toLowerCase()} station`,
     level: "info",
   });
+
+  await broadcastEventQueue(station.eventId);
 
   return NextResponse.json({ appointment, nextStatus });
 }

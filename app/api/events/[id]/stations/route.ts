@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { addStationToEvent } from "@/lib/db/events";
 import { emitTelemetry } from "@/lib/telemetry";
+import { broadcastEventQueue } from "@/lib/realtime/queue";
 
 const createStationSchema = z.object({
   type: z.enum(["SCREENING", "DONOR"]),
@@ -23,6 +24,8 @@ export async function POST(
       actorRole: "organizer",
       context: { eventId: id, stationId: station.id, type: station.type },
     });
+
+    await broadcastEventQueue(id);
 
     return NextResponse.json({ station }, { status: 201 });
   } catch (error) {

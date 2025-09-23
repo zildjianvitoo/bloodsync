@@ -16,13 +16,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { pushInAppNotification } from "@/lib/realtime/in-app";
 
 const settingsSchema = z.object({
   name: z.string().min(3, "Name is required"),
-  targetUnits: z.coerce.number().int().min(1).max(1000),
+  targetUnits: z.number().int().min(1).max(1000),
   startAt: z.string(),
-  endAt: z.string().optional().nullable(),
+  endAt: z
+    .string()
+    .optional()
+    .nullable(),
 });
 
 export type EventSettingsValues = z.infer<typeof settingsSchema>;
@@ -51,8 +55,7 @@ export function EventSettingsForm({
         },
         body: JSON.stringify({
           ...values,
-          targetUnits: Number(values.targetUnits),
-          endAt: values.endAt || null,
+          endAt: values.endAt && values.endAt.length > 0 ? values.endAt : null,
         }),
       });
 
@@ -102,7 +105,17 @@ export function EventSettingsForm({
             <FormItem>
               <FormLabel>Target units</FormLabel>
               <FormControl>
-                <Input type="number" min={1} max={1000} {...field} />
+                <Input
+                  type="number"
+                  min={1}
+                  max={1000}
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    field.onChange(value === "" ? undefined : Number(value));
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -115,7 +128,12 @@ export function EventSettingsForm({
             <FormItem>
               <FormLabel>Start time</FormLabel>
               <FormControl>
-                <Input type="datetime-local" {...field} />
+                <DateTimePicker
+                  value={field.value}
+                  onChange={(next) => field.onChange(next ?? "")}
+                  onBlur={field.onBlur}
+                  disabled={pending}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -128,7 +146,13 @@ export function EventSettingsForm({
             <FormItem>
               <FormLabel>End time (optional)</FormLabel>
               <FormControl>
-                <Input type="datetime-local" {...field} />
+                <DateTimePicker
+                  value={field.value}
+                  onChange={(next) => field.onChange(next ?? null)}
+                  onBlur={field.onBlur}
+                  disabled={pending}
+                  placeholder="Select end"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

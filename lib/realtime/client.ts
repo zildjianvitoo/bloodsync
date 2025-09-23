@@ -57,3 +57,9 @@ export function initializeRealtime() {
 export function emitClientEvent<T = unknown>(event: string, data: T) {
   ensureSocket()?.emit(event, data);
 }
+
+export function subscribeRealtime<T = unknown>(event: string, handler: (payload: T) => void) {
+  const sock = initializeRealtime();
+  sock?.on(event, handler as never);
+  return () => sock?.off(event, handler as never);
+}

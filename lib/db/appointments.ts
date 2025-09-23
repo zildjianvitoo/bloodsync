@@ -27,15 +27,29 @@ export async function advanceAppointmentForStation(stationId: string) {
     throw new Error("No next status configured");
   }
 
-  const appointment = await prisma.appointment.findFirst({
+  let appointment = await prisma.appointment.findFirst({
     where: {
       eventId: station.eventId,
       status: statusToAdvance,
+      stationId: station.id,
     },
     orderBy: {
       slotTime: "asc",
     },
   });
+
+  if (!appointment && (statusToAdvance === "CHECKED_IN" || statusToAdvance === "SCREENING")) {
+    appointment = await prisma.appointment.findFirst({
+      where: {
+        eventId: station.eventId,
+        status: statusToAdvance,
+        stationId: null,
+      },
+      orderBy: {
+        slotTime: "asc",
+      },
+    });
+  }
 
   if (!appointment) {
     return null;

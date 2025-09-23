@@ -33,8 +33,8 @@ export function RealtimeBridge() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 flex justify-center">
-      <div className="m-4 flex w-full max-w-xl flex-col gap-2">
+    <div className="pointer-events-none fixed inset-x-0 top-16 z-40 flex justify-center md:top-20">
+      <div className="mx-4 flex w-full max-w-xl flex-col gap-2">
         {notifications.map((notification) => (
           <div
             key={notification.id}

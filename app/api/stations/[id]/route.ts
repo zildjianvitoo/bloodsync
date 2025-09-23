@@ -50,3 +50,31 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    const station = await prisma.station.delete({
+      where: { id },
+    });
+
+    emitTelemetry({
+      name: "station:deleted",
+      actorRole: "organizer",
+      context: { stationId: station.id, type: station.type },
+    });
+
+    getIO()?.emit("station:removed", {
+      stationId: station.id,
+    });
+
+    return NextResponse.json({ station });
+  } catch (error) {
+    console.error("DELETE /stations failed", error);
+    return NextResponse.json({ error: "Failed to remove station" }, { status: 500 });
+  }
+}

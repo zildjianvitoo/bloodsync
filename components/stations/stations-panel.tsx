@@ -6,6 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { pushInAppNotification } from "@/lib/realtime/in-app";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export type StationResource = {
   id: string;
@@ -24,7 +35,15 @@ const statusLabels: Record<string, string> = {
   DONOR: "Donor",
 };
 
-export function StationsPanel({ stations }: { stations: StationResource[] }) {
+export function StationsPanel({
+  stations,
+  mode = "volunteer",
+  onStationRemoved,
+}: {
+  stations: StationResource[];
+  mode?: "volunteer" | "admin";
+  onStationRemoved?: (stationId: string) => void;
+}) {
   const router = useRouter();
   const [pendingStation, setPendingStation] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -38,9 +57,7 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
   async function toggleStation(stationId: string, isActive: boolean) {
     const previous = localStations;
     setPendingStation(stationId);
-    setLocalStations((prev) =>
-      prev.map((s) => (s.id === stationId ? { ...s, isActive } : s))
-    );
+    setLocalStations((prev) => prev.map((s) => (s.id === stationId ? { ...s, isActive } : s)));
 
     try {
       const response = await fetch(`/api/stations/${stationId}`, {
@@ -101,6 +118,36 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
     }
   }
 
+  async function deleteStation(stationId: string) {
+    setPendingStation(stationId);
+    try {
+      const response = await fetch(`/api/stations/${stationId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: "Failed to remove station" }));
+        pushInAppNotification({
+          level: "error",
+          title: "Could not remove station",
+          message: data.error ?? "Try again shortly",
+        });
+        return;
+      }
+      pushInAppNotification({
+        level: "success",
+        title: "Station removed",
+        message: "Volunteers will see the update instantly.",
+      });
+      setLocalStations((prev) => prev.filter((station) => station.id !== stationId));
+      onStationRemoved?.(stationId);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setPendingStation(null);
+      router.refresh();
+    }
+  }
+
   return (
     <CardContent className="space-y-5 p-6">
       {localStations.map((station) => {
@@ -109,8 +156,8 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
           return acc;
         }, {});
         const isAdvancing = isPending && pendingStation === station.id;
-        const lastAdvanceToken = advanceState[station.id];
         const waitingDonor = station.appointments.find((appointment) => appointment.status === "CHECKED_IN");
+        const recentAdvance = advanceState[station.id];
 
         return (
           <div
@@ -128,10 +175,7 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
                 </div>
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                   {Object.entries(statusLabels).map(([status, label]) => (
-                    <span
-                      key={status}
-                      className="rounded-full bg-muted px-3 py-1 text-muted-foreground"
-                    >
+                    <span key={status} className="rounded-full bg-muted px-3 py-1 text-muted-foreground">
                       {label}: {counts[status] ?? 0}
                     </span>
                   ))}
@@ -141,55 +185,88 @@ export function StationsPanel({ stations }: { stations: StationResource[] }) {
                 <Badge variant={station.isActive ? "success" : "outline"}>
                   {station.isActive ? "Active" : "Paused"}
                 </Badge>
-                {lastAdvanceToken ? (
+                {mode === "volunteer" && recentAdvance ? (
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
                     Donor advanced
                   </span>
                 ) : null}
+                {mode === "admin" ? (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        disabled={pendingStation === station.id}
+                      >
+                        Remove
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remove station?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Volunteers will see this station disappear immediately. Donors assigned here will be rerouted to active stations.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteStation(station.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Remove
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ) : null}
               </div>
             </div>
 
-            <div className="grid gap-4 rounded-2xl border border-dashed border-border/60 bg-background/70 p-4 md:grid-cols-[1fr_auto]">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Up next
-                </p>
-                {waitingDonor ? (
-                  <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-                    <p className="text-foreground">
-                      Donor ticket <span className="font-semibold">{waitingDonor.id.slice(0, 6)}</span>
-                    </p>
-                    <p>Arrived {new Date(waitingDonor.slotTime).toLocaleTimeString()}</p>
-                  </div>
-                ) : (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    No waiting donors. Keep an eye on the check-in queue.
+            {mode === "volunteer" ? (
+              <div className="grid gap-4 rounded-2xl border border-dashed border-border/60 bg-background/70 p-4 md:grid-cols-[1fr_auto]">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Up next
                   </p>
-                )}
+                  {waitingDonor ? (
+                    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                      <p className="text-foreground">
+                        Donor ticket <span className="font-semibold">{waitingDonor.id.slice(0, 6)}</span>
+                      </p>
+                      <p>Arrived {new Date(waitingDonor.slotTime).toLocaleTimeString()}</p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      No waiting donors. Keep an eye on the check-in queue.
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2 md:items-end">
+                  <Button
+                    size="sm"
+                    className="w-full md:w-40"
+                    disabled={isAdvancing || !waitingDonor}
+                    onClick={() => advanceQueue(station.id)}
+                  >
+                    {isAdvancing ? "Calling…" : waitingDonor ? "Call next donor" : "No donors waiting"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full md:w-40"
+                    disabled={isPending && pendingStation === station.id}
+                    onClick={() => toggleStation(station.id, !station.isActive)}
+                  >
+                    {station.isActive ? "Pause station" : "Resume station"}
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground">
+                    Volunteers down the line see this instantly.
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col gap-2 md:items-end">
-                <Button
-                  size="sm"
-                  className="w-full md:w-40"
-                  disabled={isAdvancing || !waitingDonor}
-                  onClick={() => advanceQueue(station.id)}
-                >
-                  {isAdvancing ? "Calling…" : waitingDonor ? "Call next donor" : "No donors waiting"}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full md:w-40"
-                  disabled={isPending && pendingStation === station.id}
-                  onClick={() => toggleStation(station.id, !station.isActive)}
-                >
-                  {station.isActive ? "Pause station" : "Resume station"}
-                </Button>
-                <p className="text-[11px] text-muted-foreground">
-                  Volunteers down the line see this instantly.
-                </p>
-              </div>
-            </div>
+            ) : null}
           </div>
         );
       })}

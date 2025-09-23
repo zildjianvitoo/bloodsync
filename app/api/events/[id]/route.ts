@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { updateEventBasics } from "@/lib/db/events";
+import { prisma } from "@/lib/db/prisma";
 import { emitTelemetry } from "@/lib/telemetry";
 
 const updateSchema = z.object({
@@ -57,5 +58,28 @@ export async function PATCH(
       return NextResponse.json({ error: error.issues[0]?.message ?? "Invalid payload" }, { status: 400 });
     }
     return NextResponse.json({ error: "Failed to update event" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  try {
+    await prisma.event.delete({
+      where: { id },
+    });
+
+    emitTelemetry({
+      name: "event:deleted",
+      actorRole: "organizer",
+      context: { eventId: id },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("DELETE /api/events/[id] failed", error);
+    return NextResponse.json({ error: "Failed to delete event" }, { status: 500 });
   }
 }

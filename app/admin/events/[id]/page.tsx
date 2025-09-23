@@ -14,6 +14,7 @@ import { StationsPanel } from "@/components/stations/stations-panel";
 import { TopNav } from "@/components/navigation/top-nav";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { AddStationForm } from "@/components/events/add-station-form";
+import { DeleteEventButton } from "@/components/events/delete-event-button";
 
 export const dynamic = "force-dynamic";
 
@@ -49,9 +50,12 @@ export default async function AdminEventDetail({
     <>
       <TopNav role="admin" />
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6 pt-10">
-      <Button asChild variant="ghost" size="sm" className="w-max px-0 text-sm">
-        <Link href="/admin">← Back to events</Link>
-      </Button>
+      <div className="flex items-center justify-between">
+        <Button asChild variant="ghost" size="sm" className="w-max px-0 text-sm">
+          <Link href="/admin">← Back to events</Link>
+        </Button>
+        <DeleteEventButton eventId={event.id} />
+      </div>
 
       <Card>
         <CardHeader>
@@ -105,7 +109,7 @@ export default async function AdminEventDetail({
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Stations
             </h2>
-            <StationsPanel stations={event.stations} />
+            <StationsPanel stations={event.stations} mode="admin" />
           </section>
         </CardContent>
       </Card>

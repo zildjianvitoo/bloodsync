@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { QrScanner } from "@/components/donor/qr-scanner";
 
 const formSchema = z.object({
   eventId: z.string().min(1, "Select an event"),
@@ -61,18 +62,42 @@ type EventOption = {
   startAt: string;
 };
 
-export function TicketCheckInForm({ events }: { events: EventOption[] }) {
+export function TicketCheckInForm({
+  events,
+  initialToken,
+  initialEventId,
+}: {
+  events: EventOption[];
+  initialToken?: string;
+  initialEventId?: string;
+}) {
   const [pending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [result, setResult] = useState<TicketPayload | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerError, setScannerError] = useState<string | null>(null);
 
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      eventId: events[0]?.id ?? "",
-      donorToken: "",
+      eventId: initialEventId && events.some((event) => event.id === initialEventId)
+        ? initialEventId
+        : events[0]?.id ?? "",
+      donorToken: initialToken ?? "",
     },
   });
+
+  useEffect(() => {
+    if (initialToken) {
+      form.setValue("donorToken", initialToken, { shouldDirty: false });
+    }
+  }, [form, initialToken]);
+
+  useEffect(() => {
+    if (initialEventId && events.some((event) => event.id === initialEventId)) {
+      form.setValue("eventId", initialEventId, { shouldDirty: false });
+    }
+  }, [events, form, initialEventId]);
 
   const selectedEvent = useMemo(() => {
     const currentId = form.watch("eventId");
@@ -159,18 +184,57 @@ export function TicketCheckInForm({ events }: { events: EventOption[] }) {
                   <FormItem>
                     <FormLabel>Donor token</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="e.g. hash:alice"
-                        autoComplete="off"
-                        disabled={pending}
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input
+                          {...field}
+                          placeholder="e.g. hash:alice"
+                          autoComplete="off"
+                          disabled={pending}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={pending}
+                          onClick={() => {
+                            setScannerError(null);
+                            setScannerOpen((prev) => !prev);
+                          }}
+                        >
+                          {scannerOpen ? "Close" : "Scan QR"}
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormDescription>Case-sensitive. Shared via your booking confirmation or QR badge.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {scannerOpen ? (
+                <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Scan your QR token
+                  </p>
+                  <QrScanner
+                    onScan={(text) => {
+                      form.setValue("donorToken", text, { shouldDirty: true });
+                      setScannerOpen(false);
+                      setScannerError(null);
+                    }}
+                    onClose={() => setScannerOpen(false)}
+                    onError={(message) => setScannerError(message)}
+                  />
+                  {scannerError ? (
+                    <p className="mt-2 text-xs text-destructive">
+                      {scannerError}. You can still type the code manually above.
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Allow camera access when prompted. We only read the QR token locally in your browser.
+                    </p>
+                  )}
+                </div>
+              ) : null}
 
               {serverError ? <p className="text-sm font-medium text-destructive">{serverError}</p> : null}
 

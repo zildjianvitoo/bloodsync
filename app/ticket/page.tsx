@@ -3,7 +3,17 @@ import { TicketCheckInForm } from "@/components/donor/ticket-checkin-form";
 
 export const dynamic = "force-dynamic";
 
-export default async function TicketPage() {
+type SearchParams = {
+  token?: string;
+  eventId?: string;
+};
+
+export default async function TicketPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const params = await searchParams;
   const events = await listEvents();
 
   return (
@@ -25,6 +35,8 @@ export default async function TicketPage() {
           name: event.name,
           startAt: event.startAt.toISOString(),
         }))}
+        initialToken={params.token}
+        initialEventId={params.eventId}
       />
     </main>
   );

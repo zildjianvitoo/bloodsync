@@ -55,6 +55,17 @@ export async function POST(
     slotTime: appointment.slotTime,
   });
 
+  if (appointment.donor?.phoneHash) {
+    getIO()?.emit("donor:turn_called", {
+      donorToken: appointment.donor.phoneHash,
+      eventId: station.eventId,
+      eventName: station.event?.name ?? "Event",
+      stationId: station.id,
+      stationType: station.type,
+      appointmentId: appointment.id,
+    });
+  }
+
   getIO()?.emit("notify", {
     title: `${station.event?.name ?? "Event"}`,
     message: `Volunteer advanced donor to ${station.type.toLowerCase()} station`,

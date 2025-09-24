@@ -66,6 +66,11 @@ export async function advanceAppointmentForStation(stationId: string) {
       donorId: true,
       status: true,
       slotTime: true,
+      donor: {
+        select: {
+          phoneHash: true,
+        },
+      },
     },
   });
 

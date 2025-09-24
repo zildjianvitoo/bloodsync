@@ -21,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { QrScanner } from "@/components/donor/qr-scanner";
+import { subscribeRealtime } from "@/lib/realtime/client";
+import { pushInAppNotification } from "@/lib/realtime/in-app";
 
 const formSchema = z.object({
   eventId: z.string().min(1, "Select an event"),
@@ -63,6 +65,20 @@ type EventOption = {
   startAt: string;
 };
 
+type DonorTurnEventPayload = {
+  donorToken: string;
+  eventName?: string;
+  stationType: "SCREENING" | "DONOR";
+  stationId: string;
+  appointmentId: string;
+};
+
+type DonorTurnEvent = {
+  eventName?: string;
+  stationType: "SCREENING" | "DONOR";
+  stationId: string;
+};
+
 export function TicketCheckInForm({
   events,
   initialToken,
@@ -77,6 +93,7 @@ export function TicketCheckInForm({
   const [result, setResult] = useState<TicketPayload | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
+  const [turnAlert, setTurnAlert] = useState<DonorTurnEvent | null>(null);
 
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(formSchema),
@@ -105,6 +122,35 @@ export function TicketCheckInForm({
     return events.find((event) => event.id === currentId);
   }, [events, form]);
 
+  const activeToken = form.watch("donorToken");
+
+  useEffect(() => {
+    if (!result || !activeToken) return;
+
+    const token = activeToken.trim();
+    if (!token) return;
+
+    const unsubscribe = subscribeRealtime<DonorTurnEventPayload>("donor:turn_called", (payload) => {
+      if (!payload?.donorToken || payload.donorToken !== token) return;
+
+      setTurnAlert({
+        eventName: payload.eventName,
+        stationType: payload.stationType,
+        stationId: payload.stationId,
+      });
+
+      pushInAppNotification({
+        title: "You're up!",
+        message: `${payload.eventName ?? "Your drive"}: please head to the ${payload.stationType.toLowerCase()} station`,
+        level: "success",
+      });
+    });
+
+    return () => {
+      unsubscribe?.();
+    };
+  }, [activeToken, result]);
+
   function onSubmit(values: TicketFormValues) {
     setServerError(null);
     startTransition(async () => {
@@ -129,6 +175,7 @@ export function TicketCheckInForm({
 
         const data = (await response.json()) as TicketPayload;
         setResult(data);
+        setTurnAlert(null);
       } catch (error) {
         console.error(error);
         setServerError("Unable to reach check-in service. Please try again.");
@@ -255,6 +302,15 @@ export function TicketCheckInForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {turnAlert ? (
+            <div className="rounded-2xl border border-primary/60 bg-primary/10 px-5 py-4 text-sm text-primary">
+              <p className="text-xs uppercase tracking-wide text-primary/80">Volunteer called your turn</p>
+              <p className="mt-2 text-base font-semibold">
+                Head to the {turnAlert.stationType === "SCREENING" ? "screening" : "donation"} station now.
+              </p>
+              <p className="text-xs text-primary/70">Check in with the station lead when you arrive.</p>
+            </div>
+          ) : null}
           {result ? (
             <TicketDetails payload={result} />
           ) : (

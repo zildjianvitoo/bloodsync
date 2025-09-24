@@ -1,6 +1,6 @@
 # BloodSync — Phase-by-Phase Delivery Plan
 
-## Phase 0 — Alignment & Foundations (Week 0)
+## Phase 0 — Alignment & Foundations (Week 0) ✅
 
 - **Objectives**: Clarify scope, secure infrastructure access, lock acceptance criteria.
 - **Deliverables**: Finalized SRS sign-off, project board, environment credentials.
@@ -51,7 +51,7 @@
 - [x] Telemetry sink configured: default console listener via `lib/telemetry` plus optional Sentry DSN env (`SENTRY_DSN`) captured in `.env.example`; alert thresholds noted in Ops notes.
 - [x] Staging SQLite database path provisioned: README documents staging path `file:/var/lib/bloodsync/staging.db` plus nightly backup rotation; Doppler stores the staged `DATABASE_URL`.
 
-## Phase 1 — Core Platform Backbone (Week 1)
+## Phase 1 — Core Platform Backbone (Week 1) ✅
 
 - **Objectives**: Establish data model, authentication, and realtime plumbing.
 - **Deliverables**: Prisma schema, migrations, seeded dev data, Socket.IO scaffolding, shared UI foundation.

@@ -29,11 +29,11 @@
 
 ## Functional Requirements
 
-- **FR-010** QR check-in generates queue ticket per event.
-- **FR-020** Auto-queue assignment based on active station capacity.
-- **FR-030** Dynamic ETA = ceil(waiting donors ÷ active stations) × average stage duration.
+- **FR-010** ✅ QR check-in generates queue ticket per event.
+- **FR-020** ✅ Auto-queue assignment based on active station capacity.
+- **FR-030** ✅ Dynamic ETA = ceil(waiting donors ÷ active stations) × average stage duration.
 - **FR-040** Auto no-show bump: mark NO_SHOW after grace period and advance queue.
-- **FR-050** Live kiosk display: Next 5 donors, counters, progress bar, average ETA.
+- **FR-050** ✅ Live kiosk display: Next 5 donors, counters, progress bar, average ETA.
 - **FR-060** Volunteer console: advance donor through Waiting → Screening → Donation → Done.
 - **FR-070** Organizer broadcast messages push to kiosk and donor devices.
 - **FR-080** Turn notifications via push or in-app fallback when donor is called.

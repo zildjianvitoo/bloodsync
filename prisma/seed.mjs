@@ -61,6 +61,46 @@ async function main() {
     },
   });
 
+  const chandra = await prisma.donor.create({
+    data: {
+      name: "Chandra Wijaya",
+      phoneHash: "hash:chandra",
+      bloodType: "B+",
+    },
+  });
+
+  const dina = await prisma.donor.create({
+    data: {
+      name: "Dina Kusuma",
+      phoneHash: "hash:dina",
+      bloodType: "AB+",
+    },
+  });
+
+  const erin = await prisma.donor.create({
+    data: {
+      name: "Erin Nugraha",
+      phoneHash: "hash:erin",
+      bloodType: "O-",
+    },
+  });
+
+  const farid = await prisma.donor.create({
+    data: {
+      name: "Farid Rahman",
+      phoneHash: "hash:farid",
+      bloodType: "B-",
+    },
+  });
+
+  const gloria = await prisma.donor.create({
+    data: {
+      name: "Gloria Hutapea",
+      phoneHash: "hash:gloria",
+      bloodType: "A-",
+    },
+  });
+
   const aliceAppointment = await prisma.appointment.create({
     data: {
       eventId: event.id,
@@ -103,6 +143,11 @@ async function main() {
         value: 5,
         source: "SIGN_UP",
       },
+      { donorId: chandra.id, value: 5, source: "SIGN_UP" },
+      { donorId: dina.id, value: 5, source: "SIGN_UP" },
+      { donorId: erin.id, value: 5, source: "SIGN_UP" },
+      { donorId: farid.id, value: 5, source: "SIGN_UP" },
+      { donorId: gloria.id, value: 5, source: "SIGN_UP" },
     ],
   });
 
@@ -183,6 +228,51 @@ async function main() {
       eventId: event.id,
       donorId: bob.id,
       slotTime: new Date("2025-02-15T09:00:00.000Z"),
+      status: "BOOKED",
+    },
+  });
+
+  await prisma.appointment.create({
+    data: {
+      eventId: event.id,
+      donorId: erin.id,
+      slotTime: new Date("2025-02-15T09:05:00.000Z"),
+      status: "BOOKED",
+    },
+  });
+
+  await prisma.appointment.create({
+    data: {
+      eventId: event.id,
+      donorId: farid.id,
+      slotTime: new Date("2025-02-15T09:10:00.000Z"),
+      status: "BOOKED",
+    },
+  });
+
+  await prisma.appointment.create({
+    data: {
+      eventId: event.id,
+      donorId: gloria.id,
+      slotTime: new Date("2025-02-15T09:12:00.000Z"),
+      status: "BOOKED",
+    },
+  });
+
+  await prisma.appointment.create({
+    data: {
+      eventId: event.id,
+      donorId: chandra.id,
+      slotTime: new Date("2025-02-15T09:15:00.000Z"),
+      status: "BOOKED",
+    },
+  });
+
+  await prisma.appointment.create({
+    data: {
+      eventId: event.id,
+      donorId: dina.id,
+      slotTime: new Date("2025-02-15T09:30:00.000Z"),
       status: "BOOKED",
     },
   });

@@ -18,6 +18,7 @@ model Event {
   stations     Station[]
   feedback     Feedback[]
   rewardItems  RewardItem[]
+  schedulePolls SchedulePoll[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -46,6 +47,7 @@ model Donor {
   badges          Badge[]
   redemptions     Redemption[]
   teamMemberships TeamMember[]
+  scheduleResponses SchedulePollResponse[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
@@ -170,4 +172,34 @@ model TeamPoint {
   value     Int
   note      String?
   createdAt DateTime @default(now())
+}
+
+model SchedulePoll {
+  id        String                 @id @default(cuid())
+  eventId   String
+  event     Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  question  String
+  options   SchedulePollOption[]
+  responses SchedulePollResponse[]
+  createdAt DateTime               @default(now())
+}
+
+model SchedulePollOption {
+  id        String                 @id @default(cuid())
+  pollId    String
+  poll      SchedulePoll           @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label     String
+  responses SchedulePollResponse[]
+  createdAt DateTime               @default(now())
+}
+
+model SchedulePollResponse {
+  id        String         @id @default(cuid())
+  pollId    String
+  optionId  String
+  donorId   String?
+  poll      SchedulePoll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option    SchedulePollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  donor     Donor?          @relation(fields: [donorId], references: [id])
+  createdAt DateTime        @default(now())
 }

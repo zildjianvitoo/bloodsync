@@ -27,6 +27,20 @@ async function main() {
     },
   });
 
+  await prisma.schedulePoll.create({
+    data: {
+      eventId: event.id,
+      question: "When should we schedule your next donation?",
+      options: {
+        create: [
+          { label: "Morning (8–10 AM)" },
+          { label: "Midday (10 AM–12 PM)" },
+          { label: "Afternoon (1–3 PM)" },
+        ],
+      },
+    },
+  });
+
   const [screeningStation, donorStation] = await Promise.all([
     prisma.station.create({
       data: {

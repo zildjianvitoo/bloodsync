@@ -11,6 +11,14 @@ export function RealtimeBridge() {
   const [notifications, setNotifications] = useState<InAppNotification[]>([]);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js", { scope: "/" })
+        .catch((error) => {
+          console.error("service worker registration failed", error);
+        });
+    }
+
     initializeRealtime();
     const timeouts = new Set<number>();
 

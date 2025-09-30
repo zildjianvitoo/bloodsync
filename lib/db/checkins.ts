@@ -19,6 +19,10 @@ type CheckInResult = {
       type: "SCREENING" | "DONOR";
     } | null;
   };
+  donor: {
+    id: string;
+    token: string;
+  };
   event: EventQueuePayload["event"];
   stats: EventQueuePayload["stats"];
   checkedInAt: string;
@@ -52,7 +56,7 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
     throw new CheckInError("Missing donor token", 400);
   }
 
-  const { appointment: updatedAppointment, assignedStationId } = await prisma.$transaction(async (tx) => {
+  const { appointment: updatedAppointment, assignedStationId, donor } = await prisma.$transaction(async (tx) => {
     const event = await tx.event.findUnique({
       where: { id: eventId },
       select: { id: true },
@@ -64,7 +68,7 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
 
     const donor = await tx.donor.findUnique({
       where: { phoneHash: trimmedToken },
-      select: { id: true },
+      select: { id: true, phoneHash: true },
     });
 
     if (!donor) {
@@ -152,7 +156,11 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
       },
     });
 
-    return { appointment: updated, assignedStationId: updated.stationId ?? assignedStationId };
+    return {
+      appointment: updated,
+      assignedStationId: updated.stationId ?? assignedStationId,
+      donor,
+    };
   });
 
   const queue = await getEventQueue(eventId);
@@ -212,6 +220,10 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
       peopleInFront,
       etaMinutes,
       station: stationInfo ? { id: stationInfo.id, type: stationInfo.type } : null,
+    },
+    donor: {
+      id: donor.id,
+      token: trimmedToken,
     },
     event: queue.event,
     stats: queue.stats,

@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 import { QrScanner } from "@/components/donor/qr-scanner";
 import { subscribeRealtime } from "@/lib/realtime/client";
 import { pushInAppNotification } from "@/lib/realtime/in-app";
+import { FeedbackSurvey } from "@/components/donor/feedback-survey";
+import { SchedulePollCard } from "@/components/donor/schedule-poll-card";
 
 const formSchema = z.object({
   eventId: z.string().min(1, "Select an event"),
@@ -42,6 +44,10 @@ type TicketPayload = {
       id: string;
       type: "SCREENING" | "DONOR";
     } | null;
+  };
+  donor: {
+    id: string;
+    token: string;
   };
   event: {
     id: string;
@@ -312,7 +318,10 @@ export function TicketCheckInForm({
             </div>
           ) : null}
           {result ? (
-            <TicketDetails payload={result} />
+            <>
+              <TicketDetails payload={result} />
+              <PostDonationExperience payload={result} />
+            </>
           ) : (
             <p className="text-sm text-muted-foreground">
               No ticket yet. Submit your donor token to view your live status for
@@ -404,5 +413,40 @@ function TicketDetails({ payload }: TicketDetailsProps) {
         </Link>
       </div>
     </div>
+  );
+}
+
+function PostDonationExperience({ payload }: TicketDetailsProps) {
+  const status = payload.ticket.status;
+  const canSubmitFeedback = status === "DONOR" || status === "DONE";
+
+  return (
+    <section className="space-y-5 rounded-2xl border border-border/70 bg-background/70 p-5">
+      <div className="space-y-2">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">After your donation</p>
+        <h3 className="text-lg font-semibold text-foreground">Wrap up in two quick taps</h3>
+        <p className="text-xs text-muted-foreground">
+          Share how the drive went and tell us when you&apos;d like the next reminder.
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {canSubmitFeedback ? (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-foreground">CSAT + NPS pulse</h4>
+            <FeedbackSurvey eventId={payload.event.id} donorId={payload.donor.id} />
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-border/60 bg-background/60 px-4 py-3 text-xs text-muted-foreground">
+            Volunteers will unlock the feedback card once they mark your donation complete.
+          </div>
+        )}
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground">Schedule poll</h4>
+          <SchedulePollCard eventId={payload.event.id} donorId={payload.donor.id} />
+        </div>
+      </div>
+    </section>
   );
 }

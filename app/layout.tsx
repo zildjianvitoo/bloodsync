@@ -16,6 +16,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BloodSync",
   description: "Real-time donor operations for Sinergi Fest",
+  manifest: "/manifest.json",
+  themeColor: "#2F6BFF",
 };
 
 export default function RootLayout({

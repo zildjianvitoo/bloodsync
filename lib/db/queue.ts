@@ -5,6 +5,7 @@ export type QueueAppointment = {
   status: string;
   slotTime: string;
   stationId: string | null;
+  checkinAt: string | null;
 };
 
 export type StationQueueInfo = {
@@ -54,6 +55,16 @@ export async function getEventQueue(eventId: string): Promise<EventQueuePayload 
             orderBy: {
               slotTime: "asc",
             },
+            select: {
+              id: true,
+              status: true,
+              slotTime: true,
+              checkin: {
+                select: {
+                  timestamp: true,
+                },
+              },
+            },
           },
         },
       },
@@ -71,6 +82,11 @@ export async function getEventQueue(eventId: string): Promise<EventQueuePayload 
           status: true,
           slotTime: true,
           stationId: true,
+          checkin: {
+            select: {
+              timestamp: true,
+            },
+          },
         },
       },
     },
@@ -91,6 +107,9 @@ export async function getEventQueue(eventId: string): Promise<EventQueuePayload 
       status: appointment.status,
       slotTime: appointment.slotTime.toISOString(),
       stationId: appointment.stationId,
+      checkinAt: appointment.checkin?.timestamp
+        ? appointment.checkin.timestamp.toISOString()
+        : null,
     };
     switch (appointment.status) {
       case "CHECKED_IN":

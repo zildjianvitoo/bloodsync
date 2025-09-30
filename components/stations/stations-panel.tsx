@@ -27,6 +27,7 @@ export type StationResource = {
     id: string;
     status: string;
     slotTime: Date;
+    checkinAt: Date | null;
   }[];
   awaitingDonorCount?: number;
 };
@@ -314,9 +315,7 @@ export function StationsPanel({
                       <NoSSR>
                         <p>
                           Arrived{" "}
-                          {new Date(
-                            actionContext.slotTime
-                          ).toLocaleTimeString()}
+                          {(actionContext.checkinAt ?? actionContext.slotTime).toLocaleTimeString()}
                         </p>
                       </NoSSR>
                     </div>

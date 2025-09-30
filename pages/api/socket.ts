@@ -3,6 +3,7 @@ import { Server as IOServer } from "socket.io";
 import type { Server as HTTPServer } from "http";
 import { emitTelemetry } from "@/lib/telemetry";
 import { registerIO } from "@/lib/realtime/server";
+import { registerNoShowSweep } from "@/lib/jobs/no-show";
 
 export const config = {
   api: {
@@ -29,6 +30,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponseWithSoc
     });
 
     registerIO(io);
+    registerNoShowSweep();
 
     io.on("connection", (socket) => {
       emitTelemetry({

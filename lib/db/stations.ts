@@ -11,21 +11,26 @@ export async function listStationsWithEvent() {
             startAt: true,
           },
         },
-        appointments: {
-          where: {
-            status: {
-              in: ["CHECKED_IN", "SCREENING", "DONOR"],
-            },
-          },
-          select: {
-            id: true,
-            status: true,
-            slotTime: true,
-          },
-          orderBy: {
-            slotTime: "asc",
+      appointments: {
+        where: {
+          status: {
+            in: ["CHECKED_IN", "SCREENING", "DONOR"],
           },
         },
+        select: {
+          id: true,
+          status: true,
+          slotTime: true,
+          checkin: {
+            select: {
+              timestamp: true,
+            },
+          },
+        },
+        orderBy: {
+          slotTime: "asc",
+        },
+      },
       },
       orderBy: [{ event: { startAt: "asc" } }, { type: "asc" }],
     }),
@@ -48,6 +53,10 @@ export async function listStationsWithEvent() {
 
   return stations.map((station) => ({
     ...station,
+    appointments: station.appointments.map(({ checkin, ...rest }) => ({
+      ...rest,
+      checkinAt: checkin?.timestamp ?? null,
+    })),
     awaitingDonorCount:
       station.type === "DONOR" ? donorReadyByEvent.get(station.eventId) ?? 0 : 0,
   }));

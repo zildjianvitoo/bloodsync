@@ -17,16 +17,21 @@ export async function getEventById(eventId: string) {
               status: {
                 in: ["CHECKED_IN", "SCREENING", "DONOR"],
               },
-            },
-            select: {
-              id: true,
-              status: true,
-              slotTime: true,
-            },
-            orderBy: {
-              slotTime: "asc",
+          },
+          select: {
+            id: true,
+            status: true,
+            slotTime: true,
+            checkin: {
+              select: {
+                timestamp: true,
+              },
             },
           },
+          orderBy: {
+            slotTime: "asc",
+          },
+        },
         },
       },
     },

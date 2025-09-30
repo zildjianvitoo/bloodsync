@@ -46,6 +46,14 @@ export default async function AdminEventDetail({
     endAt: event.endAt ? new Date(event.endAt).toISOString().slice(0, 16) : "",
   };
 
+  const stationPanelData = event.stations.map((station) => ({
+    ...station,
+    appointments: station.appointments.map(({ checkin, ...rest }) => ({
+      ...rest,
+      checkinAt: checkin?.timestamp ?? null,
+    })),
+  }));
+
   return (
     <>
       <TopNav role="admin" />
@@ -109,7 +117,7 @@ export default async function AdminEventDetail({
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               Stations
             </h2>
-            <StationsPanel stations={event.stations} mode="admin" />
+            <StationsPanel stations={stationPanelData} mode="admin" />
           </section>
         </CardContent>
       </Card>

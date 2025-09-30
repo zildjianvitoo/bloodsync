@@ -22,8 +22,8 @@ export type PollSummary = {
   }[];
 };
 
-export async function getSchedulePollForEvent(eventId: string) {
-  return prisma.schedulePoll.findFirst({
+export async function getSchedulePollForEvent(eventId: string, donorId?: string | null) {
+  const poll = await prisma.schedulePoll.findFirst({
     where: { eventId },
     include: {
       options: {
@@ -48,6 +48,26 @@ export async function getSchedulePollForEvent(eventId: string) {
       createdAt: "asc",
     },
   });
+
+  if (!poll) {
+    return null;
+  }
+
+  let respondedOptionId: string | null = null;
+  if (donorId) {
+    const response = await prisma.schedulePollResponse.findFirst({
+      where: {
+        pollId: poll.id,
+        donorId,
+      },
+      select: {
+        optionId: true,
+      },
+    });
+    respondedOptionId = response?.optionId ?? null;
+  }
+
+  return { poll, respondedOptionId };
 }
 
 export async function getPollSummary(pollId: string): Promise<PollSummary | null> {

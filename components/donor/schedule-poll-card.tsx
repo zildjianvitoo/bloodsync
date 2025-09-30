@@ -36,6 +36,7 @@ export function SchedulePollCard({ eventId, donorId }: SchedulePollCardProps) {
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [submitted, setSubmitted] = useState(false);
 
   const form = useForm<SchedulePollForm>({
     resolver: zodResolver(responseSchema) as Resolver<SchedulePollForm>,
@@ -51,15 +52,42 @@ export function SchedulePollCard({ eventId, donorId }: SchedulePollCardProps) {
       setLoading(true);
       setServerError(null);
       try {
-        const response = await fetch(`/api/poll?eventId=${eventId}`);
+        const query = new URLSearchParams({ eventId });
+        if (donorId) {
+          query.set("donorId", donorId);
+        }
+
+        const response = await fetch(`/api/poll?${query.toString()}`);
         if (!response.ok) {
           throw new Error("Failed to fetch poll");
         }
-        const data = (await response.json()) as { poll: PollState | null };
+        const data = (await response.json()) as {
+          poll:
+            | (PollState & {
+                respondedOptionId?: string | null;
+              })
+            | null;
+        };
         if (!active) return;
-        setPoll(data.poll);
-        if (data.poll && data.poll.options[0]) {
-          form.setValue("optionId", data.poll.options[0].id, { shouldDirty: false });
+        if (data.poll) {
+          if (data.poll.respondedOptionId) {
+            setSubmitted(true);
+            setPoll(null);
+          } else {
+            setPoll({
+              id: data.poll.id,
+              question: data.poll.question,
+              totalResponses: data.poll.totalResponses,
+              options: data.poll.options,
+            });
+            if (data.poll.options[0]) {
+              form.setValue("optionId", data.poll.options[0].id, { shouldDirty: false });
+            }
+            setSubmitted(false);
+          }
+        } else {
+          setPoll(null);
+          setSubmitted(false);
         }
       } catch (error) {
         console.error(error);
@@ -101,10 +129,8 @@ export function SchedulePollCard({ eventId, donorId }: SchedulePollCardProps) {
           return;
         }
 
-        const data = (await response.json()) as { poll: PollState | null };
-        if (data.poll) {
-          setPoll(data.poll);
-        }
+        setSubmitted(true);
+        setPoll(null);
       } catch (error) {
         console.error(error);
         setServerError("Unable to submit response right now");
@@ -114,6 +140,15 @@ export function SchedulePollCard({ eventId, donorId }: SchedulePollCardProps) {
 
   if (loading) {
     return <p className="text-sm text-muted-foreground">Loading future schedule poll…</p>;
+  }
+
+  if (submitted) {
+    return (
+      <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-4 text-sm text-emerald-900">
+        <p className="font-semibold">Preference saved!</p>
+        <p className="text-emerald-800">We&apos;ll nudge you when that window opens up.</p>
+      </div>
+    );
   }
 
   if (!poll) {

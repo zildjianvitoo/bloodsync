@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -100,6 +100,8 @@ export function TicketCheckInForm({
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scannerError, setScannerError] = useState<string | null>(null);
   const [turnAlert, setTurnAlert] = useState<DonorTurnEvent | null>(null);
+  const restoredTicket = useRef(false);
+  const storageKey = "bloodsync:ticket";
 
   const form = useForm<TicketFormValues>({
     resolver: zodResolver(formSchema),
@@ -122,6 +124,52 @@ export function TicketCheckInForm({
       form.setValue("eventId", initialEventId, { shouldDirty: false });
     }
   }, [events, form, initialEventId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || restoredTicket.current) return;
+    const raw = window.localStorage.getItem(storageKey);
+    if (!raw) return;
+
+    try {
+      const stored = JSON.parse(raw) as { payload: TicketPayload; savedAt: string };
+      if (!stored?.payload) return;
+
+      const savedAt = new Date(stored.savedAt);
+      const twelveHoursMs = 1000 * 60 * 60 * 12;
+      if (Number.isNaN(savedAt.getTime()) || Date.now() - savedAt.getTime() > twelveHoursMs) {
+        window.localStorage.removeItem(storageKey);
+        return;
+      }
+
+      const eventExists = events.some((event) => event.id === stored.payload.event.id);
+      if (!eventExists) {
+        window.localStorage.removeItem(storageKey);
+        return;
+      }
+
+      restoredTicket.current = true;
+      setResult(stored.payload);
+      form.setValue("eventId", stored.payload.event.id, { shouldDirty: false });
+      form.setValue("donorToken", stored.payload.donor.token, { shouldDirty: false });
+      setTurnAlert(null);
+    } catch (error) {
+      console.error("Failed to restore ticket", error);
+      window.localStorage.removeItem(storageKey);
+    }
+  }, [events, form, storageKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!result) {
+      window.localStorage.removeItem(storageKey);
+      return;
+    }
+
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify({ payload: result, savedAt: new Date().toISOString() })
+    );
+  }, [result, storageKey]);
 
   const selectedEvent = useMemo(() => {
     const currentId = form.watch("eventId");

@@ -1,11 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
 
-const STATUS_FLOW: Record<string, string> = {
-  CHECKED_IN: "SCREENING",
-  SCREENING: "DONOR",
-  DONOR: "DONE",
-};
-
 export async function advanceAppointmentForStation(stationId: string) {
   const station = await prisma.station.findUnique({
     where: { id: stationId },
@@ -20,45 +14,152 @@ export async function advanceAppointmentForStation(stationId: string) {
     throw new Error("Station not found");
   }
 
-  const statusToAdvance = station.type === "SCREENING" ? "CHECKED_IN" : "SCREENING";
-  const nextStatus = STATUS_FLOW[statusToAdvance];
-
-  if (!nextStatus) {
-    throw new Error("No next status configured");
-  }
-
-  let appointment = await prisma.appointment.findFirst({
-    where: {
-      eventId: station.eventId,
-      status: statusToAdvance,
-      stationId: station.id,
-    },
-    orderBy: {
-      slotTime: "asc",
-    },
-  });
-
-  if (!appointment && (statusToAdvance === "CHECKED_IN" || statusToAdvance === "SCREENING")) {
-    appointment = await prisma.appointment.findFirst({
+  if (station.type === "SCREENING") {
+    const inProgress = await prisma.appointment.findFirst({
       where: {
         eventId: station.eventId,
-        status: statusToAdvance,
+        stationId: station.id,
+        status: "SCREENING",
+      },
+      orderBy: {
+        slotTime: "asc",
+      },
+    });
+
+    if (inProgress) {
+      const updated = await prisma.appointment.update({
+        where: { id: inProgress.id },
+        data: {
+          status: "DONOR",
+          stationId: null,
+        },
+        select: {
+          id: true,
+          donorId: true,
+          status: true,
+          slotTime: true,
+          donor: {
+            select: {
+              phoneHash: true,
+            },
+          },
+        },
+      });
+
+      return {
+        appointment: updated,
+        nextStatus: "DONOR",
+        previousStatus: "SCREENING",
+      };
+    }
+
+    const waiting = await prisma.appointment.findFirst({
+      where: {
+        eventId: station.eventId,
+        status: "CHECKED_IN",
+        stationId: station.id,
+      },
+      orderBy: {
+        slotTime: "asc",
+      },
+    }) ??
+    await prisma.appointment.findFirst({
+      where: {
+        eventId: station.eventId,
+        status: "CHECKED_IN",
         stationId: null,
       },
       orderBy: {
         slotTime: "asc",
       },
     });
+
+    if (!waiting) {
+      return null;
+    }
+
+    const updated = await prisma.appointment.update({
+      where: { id: waiting.id },
+      data: {
+        status: "SCREENING",
+        stationId: station.id,
+      },
+      select: {
+        id: true,
+        donorId: true,
+        status: true,
+        slotTime: true,
+        donor: {
+          select: {
+            phoneHash: true,
+          },
+        },
+      },
+    });
+
+    return {
+      appointment: updated,
+      nextStatus: "SCREENING",
+      previousStatus: "CHECKED_IN",
+    };
   }
 
-  if (!appointment) {
+  const donating = await prisma.appointment.findFirst({
+    where: {
+      eventId: station.eventId,
+      stationId: station.id,
+      status: "DONOR",
+    },
+    orderBy: {
+      slotTime: "asc",
+    },
+  });
+
+  if (donating) {
+    const updated = await prisma.appointment.update({
+      where: { id: donating.id },
+      data: {
+        status: "DONE",
+        stationId: null,
+      },
+      select: {
+        id: true,
+        donorId: true,
+        status: true,
+        slotTime: true,
+        donor: {
+          select: {
+            phoneHash: true,
+          },
+        },
+      },
+    });
+
+    return {
+      appointment: updated,
+      nextStatus: "DONE",
+      previousStatus: "DONOR",
+    };
+  }
+
+  const readyForDonation = await prisma.appointment.findFirst({
+    where: {
+      eventId: station.eventId,
+      status: "DONOR",
+      stationId: null,
+    },
+    orderBy: {
+      slotTime: "asc",
+    },
+  });
+
+  if (!readyForDonation) {
     return null;
   }
 
   const updated = await prisma.appointment.update({
-    where: { id: appointment.id },
+    where: { id: readyForDonation.id },
     data: {
-      status: nextStatus,
       stationId: station.id,
     },
     select: {
@@ -76,7 +177,7 @@ export async function advanceAppointmentForStation(stationId: string) {
 
   return {
     appointment: updated,
-    nextStatus,
-    previousStatus: statusToAdvance,
+    nextStatus: "DONOR",
+    previousStatus: "SCREENING",
   };
 }

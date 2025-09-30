@@ -69,7 +69,7 @@
 - Scaffold admin/volunteer layout (App Router nested routes) consuming the events API.
 - Integrate Tailwind CSS tokens + Shadcn UI components; swap admin overview/detail to shared UI primitives.
 
-## Phase 2 — Donor Journey Experience (Week 2)
+## Phase 2 — Donor Journey Experience (Week 2) ✅
 
 - **Objectives**: Deliver donor-facing flows from check-in to feedback.
 - **Deliverables**: QR check-in flow, ticket view with dynamic ETA, PWA shell.

@@ -15,6 +15,9 @@ import { TopNav } from "@/components/navigation/top-nav";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { AddStationForm } from "@/components/events/add-station-form";
 import { DeleteEventButton } from "@/components/events/delete-event-button";
+import { getEventQueue } from "@/lib/db/queue";
+import { calculateEventKpis } from "@/lib/kpi";
+import { KpiDashboard } from "@/components/admin/kpi-dashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +40,9 @@ export default async function AdminEventDetail({
   if (!event) {
     notFound();
   }
+
+  const queue = await getEventQueue(id);
+  const kpis = queue ? calculateEventKpis(queue) : null;
 
   const activeStations = event.stations.filter((station) => station.isActive).length;
   const settingsInitial = {
@@ -99,6 +105,15 @@ export default async function AdminEventDetail({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {kpis ? (
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Live KPIs
+              </h2>
+              <KpiDashboard eventId={event.id} initial={kpis} />
+            </section>
+          ) : null}
+
           <div className="grid gap-3 rounded-2xl border border-border/60 bg-background/80 p-4 text-sm text-muted-foreground md:grid-cols-3">
             <div>
               <p className="uppercase tracking-wide text-[11px] text-muted-foreground/80">Target</p>

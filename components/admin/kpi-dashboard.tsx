@@ -9,7 +9,14 @@ const formatPercent = (value: number) => `${Math.round(value * 100)}%`;
 const formatMinutes = (minutes: number) => `${minutes} min`;
 const formatThroughput = (value: number) => `${value.toFixed(1)} bags/hr`;
 
-const METRIC_META: { key: keyof EventKpis; label: string; formatter?: (value: number) => string }[] = [
+type NumericMetricKey =
+  | "checkInRate"
+  | "attendanceRate"
+  | "averageWaitMinutes"
+  | "throughputPerHour"
+  | "targetProgress";
+
+const METRIC_META: { key: NumericMetricKey; label: string; formatter?: (value: number) => string }[] = [
   { key: "checkInRate", label: "Check-in rate", formatter: formatPercent },
   { key: "attendanceRate", label: "Attendance", formatter: formatPercent },
   { key: "averageWaitMinutes", label: "Avg wait", formatter: formatMinutes },

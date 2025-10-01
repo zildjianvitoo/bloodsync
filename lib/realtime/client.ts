@@ -39,9 +39,17 @@ function ensureSocket() {
     emitTelemetry({ name: "socket:client_disconnected", context: { reason } });
   });
 
-  socket.on("notify", (payload: QueueNotification) => {
+socket.on("notify", (payload: QueueNotification) => {
     pushInAppNotification({
       title: payload.title,
+      message: payload.message,
+      level: payload.level,
+    });
+  });
+
+  socket.on("broadcast", (payload: QueueNotification & { id?: string }) => {
+    pushInAppNotification({
+      title: payload.title ?? "Update",
       message: payload.message,
       level: payload.level,
     });

@@ -38,6 +38,7 @@ export type EventQueuePayload = {
     donor: number;
     done: number;
   };
+  statusCounts: Record<string, number>;
 };
 
 export async function getEventQueue(eventId: string): Promise<EventQueuePayload | null> {
@@ -95,6 +96,21 @@ export async function getEventQueue(eventId: string): Promise<EventQueuePayload 
   if (!event) {
     return null;
   }
+
+  const grouped = await prisma.appointment.groupBy({
+    by: ["status"],
+    where: {
+      eventId,
+    },
+    _count: {
+      _all: true,
+    },
+  });
+
+  const statusCounts = grouped.reduce<Record<string, number>>((acc, item) => {
+    acc[item.status] = item._count._all;
+    return acc;
+  }, {});
 
   const waiting: QueueAppointment[] = [];
   const screening: QueueAppointment[] = [];
@@ -167,5 +183,6 @@ export async function getEventQueue(eventId: string): Promise<EventQueuePayload 
       donor: donor.length,
       done: done.length,
     },
+    statusCounts,
   };
 }

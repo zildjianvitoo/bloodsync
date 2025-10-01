@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/session";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TopNav } from "@/components/navigation/top-nav";
+import { BroadcastForm } from "@/components/admin/broadcast-form";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,18 @@ export default async function AdminDashboard() {
               </li>
             ) : null}
           </ul>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Broadcast update</CardTitle>
+          <CardDescription>Push a message to kiosks and donor devices in real time.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <BroadcastForm
+            events={events.map((event) => ({ id: event.id, name: event.name }))}
+          />
         </CardContent>
       </Card>
     </main>

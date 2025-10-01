@@ -19,6 +19,7 @@ model Event {
   feedback     Feedback[]
   rewardItems  RewardItem[]
   schedulePolls SchedulePoll[]
+  broadcasts   Broadcast[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -48,6 +49,7 @@ model Donor {
   redemptions     Redemption[]
   teamMemberships TeamMember[]
   scheduleResponses SchedulePollResponse[]
+  broadcasts      Broadcast[] @relation("ActorBroadcasts")
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
@@ -202,4 +204,15 @@ model SchedulePollResponse {
   option    SchedulePollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   donor     Donor?          @relation(fields: [donorId], references: [id])
   createdAt DateTime        @default(now())
+}
+
+model Broadcast {
+  id        String   @id @default(cuid())
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  actorId   String?
+  actor     Donor?   @relation("ActorBroadcasts", fields: [actorId], references: [id])
+  message   String
+  level     String
+  createdAt DateTime @default(now())
 }

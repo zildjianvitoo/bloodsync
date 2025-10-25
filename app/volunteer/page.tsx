@@ -8,12 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AnimatedHeading } from "@/components/ui/heading";
 import { GlassCard } from "@/components/ui/glass-card";
 import { StationsPanel } from "@/components/stations/stations-panel";
 import { TopNav } from "@/components/navigation/top-nav";
+import { RewardQueuePanel } from "@/components/volunteer/reward-queue-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -57,20 +57,27 @@ export default async function VolunteerPage() {
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
-        {Object.values(grouped).map((eventStations) => {
-          const event = eventStations[0]?.event;
-          return (
-            <Card key={event?.id ?? "unknown"} className="overflow-hidden border-border/70 bg-card/90 shadow-xl">
-              <CardHeader>
-                <CardTitle>{event?.name ?? "Ad-hoc event"}</CardTitle>
+          {Object.values(grouped).map((eventStations) => {
+            const event = eventStations[0]?.event;
+            const eventId = event?.id ?? "unknown";
+            return (
+              <Card key={eventId} className="overflow-hidden border-border/70 bg-card/90 shadow-xl">
+                <CardHeader className="space-y-1">
+                  <CardTitle>{event?.name ?? "Ad-hoc event"}</CardTitle>
                   <CardDescription>
-                    {event?.startAt
-                      ? new Date(event.startAt).toLocaleString()
-                      : "Flexible schedule"}
+                    {event?.startAt ? new Date(event.startAt).toLocaleString() : "Flexible schedule"}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   <StationsPanel stations={eventStations} />
+                  {event?.id ? (
+                    <div className="space-y-3 rounded-2xl border border-dashed border-border/60 bg-background/60 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Snack & merch queue
+                      </p>
+                      <RewardQueuePanel eventId={event.id} />
+                    </div>
+                  ) : null}
                 </CardContent>
                 <CardFooter className="justify-between text-xs text-muted-foreground">
                   <span>Tip: align with screening lead every 30 minutes.</span>

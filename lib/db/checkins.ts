@@ -5,6 +5,7 @@ import { getEventQueue } from "@/lib/db/queue";
 import { broadcastEventQueue } from "@/lib/realtime/queue";
 import { getIO } from "@/lib/realtime/server";
 import { awardPointsOnce, POINT_RULES } from "@/lib/rewards/points";
+import { awardOnTimeBadge } from "@/lib/badges";
 
 const AVERAGE_SCREENING_MINUTES = 12;
 
@@ -57,7 +58,7 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
     throw new CheckInError("Missing donor token", 400);
   }
 
-  const { appointment: updatedAppointment, assignedStationId, donor } = await prisma.$transaction(async (tx) => {
+  const { appointment: updatedAppointment, assignedStationId, donor, checkinTime } = await prisma.$transaction(async (tx) => {
     const event = await tx.event.findUnique({
       where: { id: eventId },
       select: { id: true },
@@ -146,14 +147,15 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
       },
     });
 
+    const timestamp = new Date();
     await tx.checkin.upsert({
       where: { appointmentId: appointment.id },
       create: {
         appointmentId: appointment.id,
-        timestamp: new Date(),
+        timestamp,
       },
       update: {
-        timestamp: new Date(),
+        timestamp,
       },
     });
 
@@ -161,6 +163,7 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
       appointment: updated,
       assignedStationId: updated.stationId ?? assignedStationId,
       donor,
+      checkinTime: timestamp,
     };
   });
 
@@ -214,6 +217,7 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
   await broadcastEventQueue(eventId, queue);
 
   await awardCheckInBonuses(donor.id, eventId);
+  await awardOnTimeBadge(donor.id, updatedAppointment.slotTime, checkinTime);
 
   return {
     ticket: {

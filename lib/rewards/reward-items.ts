@@ -116,6 +116,12 @@ export async function redeemRewardItem(params: { donorId: string; rewardItemId: 
       },
       include: {
         rewardItem: true,
+        donor: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 

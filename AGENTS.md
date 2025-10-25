@@ -35,16 +35,16 @@
 - **FR-040** Auto no-show bump: mark NO_SHOW after grace period and advance queue.
 - **FR-050** ✅ Live kiosk display: Next 5 donors, counters, progress bar, average ETA.
 - **FR-060** Volunteer console: advance donor through Waiting → Screening → Donation → Done.
-- **FR-070** Organizer broadcast messages push to kiosk and donor devices.
-- **FR-080** Turn notifications via push or in-app fallback when donor is called.
-- **FR-090** Real-time KPI dashboard (check-in rate, attendance, avg wait, throughput, target progress).
-- **FR-100** CSV export for check-ins, attendance, feedback.
-- **FR-110** CSAT+NPS micro-survey with optional 120-character comment.
-- **FR-120** Schedule polling for preferred future time slots.
-- **FR-130** Comment moderation: private storage, aggregate surfacing only.
-- **FR-140** Action points: sign-up +5, attend +20, complete +50, referral +15.
-- **FR-145** Reward redemption: donors exchange accumulated points for event perks (e.g., snacks, merch) with inventory and eligibility controls.
-- **FR-150** Badges: First Drop, Three's a Charm (3×), On-Time.
+- **FR-070** ✅ Organizer broadcast messages push to kiosk and donor devices.
+- **FR-080** ✅ Turn notifications via push or in-app fallback when donor is called.
+- **FR-090** ✅ Real-time KPI dashboard (check-in rate, attendance, avg wait, throughput, target progress).
+- **FR-100** ✅ CSV export for check-ins, attendance, feedback.
+- **FR-110** ✅ CSAT+NPS micro-survey with optional 120-character comment.
+- **FR-120** ✅ Schedule polling for preferred future time slots.
+- **FR-130** Comment moderation: private storage, aggregate surfacing only. *(pending moderation queue + tooling)*
+- **FR-140** ✅ Action points: sign-up +5, attend +20, complete +50, referral +15.
+- **FR-145** ✅ Reward redemption: donors exchange accumulated points for event perks (e.g., snacks, merch) with inventory and eligibility controls.
+- **FR-150** ✅ Badges: First Drop, Three's a Charm (3×), On-Time.
 - **FR-160** Teams & leaderboard (could-have) for team and individual rankings.
 - **FR-170** Next-donation reminder push when donor becomes eligible again.
 - **FR-180** Consent & Terms of Service with minimum data capture (hashed contact info).
@@ -114,3 +114,11 @@
 
 - Commit and push after completing each task. Every commit **must** use a Conventional Commit message (`type: short summary`, e.g., `feat: add friend request flow`).
 - Centralize fetch/service logic under `lib/api/` modules so components stay declarative and reuse consistent request helpers.
+
+## Delivery Checklist
+
+- [x] Points ledger wired to check-in/completion events with donor-facing balance view (FR-140).
+- [x] Reward catalog, redemption API, admin/volunteer fulfillment queue, and donor redeem flow (FR-145).
+- [x] Badge listeners (First Drop, Three’s a Charm, On-Time) plus donor badge display (FR-150).
+- [ ] Teams & leaderboard scaffolding (FR-160) — pending.
+- [ ] Next-donation reminder service (FR-170) — pending.

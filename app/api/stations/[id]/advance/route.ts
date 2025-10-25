@@ -5,6 +5,7 @@ import { emitTelemetry } from "@/lib/telemetry";
 import { getIO } from "@/lib/realtime/server";
 import { broadcastEventQueue } from "@/lib/realtime/queue";
 import { awardPointsOnce, POINT_RULES } from "@/lib/rewards/points";
+import { awardCompletionBadges } from "@/lib/badges";
 
 export async function POST(
   request: Request,
@@ -48,6 +49,7 @@ export async function POST(
         note: "Donation completed",
         awardKey: `complete:${station.eventId}:${appointment.donorId}`,
       });
+      await awardCompletionBadges(appointment.donorId);
     } catch (error) {
       console.error("Failed to award completion points", error);
     }

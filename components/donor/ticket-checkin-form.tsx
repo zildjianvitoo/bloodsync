@@ -27,6 +27,7 @@ import { FeedbackSurvey } from "@/components/donor/feedback-survey";
 import { SchedulePollCard } from "@/components/donor/schedule-poll-card";
 import { RewardBalanceCard } from "@/components/donor/reward-balance-card";
 import { RewardRedeemList } from "@/components/donor/reward-redeem-list";
+import { BadgeList } from "@/components/donor/badge-list";
 
 const formSchema = z.object({
   eventId: z.string().min(1, "Select an event"),
@@ -496,6 +497,11 @@ function PostDonationExperience({ payload }: TicketDetailsProps) {
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-foreground">Schedule poll</h4>
           <SchedulePollCard eventId={payload.event.id} donorId={payload.donor.id} />
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground">Badges unlocked</h4>
+          <BadgeList donorId={payload.donor.id} />
         </div>
 
         <div className="space-y-3">

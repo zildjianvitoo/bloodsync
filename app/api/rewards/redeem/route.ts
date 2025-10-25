@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getIO } from "@/lib/realtime/server";
 import { redeemRewardItem, RewardError } from "@/lib/rewards/reward-items";
 
 const redeemSchema = z.object({
@@ -12,6 +13,14 @@ export async function POST(request: Request) {
     const payload = await request.json();
     const parsed = redeemSchema.parse(payload);
     const data = await redeemRewardItem(parsed);
+
+    getIO()?.emit("reward:redeemed", {
+      donorId: data.redemption.donor?.id,
+      donorName: data.redemption.donor?.name,
+      rewardItem: data.redemption.rewardItem.name,
+      cost: data.redemption.cost,
+    });
+
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {

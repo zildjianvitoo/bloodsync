@@ -41,7 +41,7 @@
 - **FR-100** ✅ CSV export for check-ins, attendance, feedback.
 - **FR-110** ✅ CSAT+NPS micro-survey with optional 120-character comment.
 - **FR-120** ✅ Schedule polling for preferred future time slots.
-- **FR-130** Comment moderation: private storage, aggregate surfacing only. *(pending moderation queue + tooling)*
+- **FR-130** ✅ Comment moderation: private storage, review queue + aggregate-only surfacing.
 - **FR-140** ✅ Action points: sign-up +5, attend +20, complete +50, referral +15.
 - **FR-145** ✅ Reward redemption: donors exchange accumulated points for event perks (e.g., snacks, merch) with inventory and eligibility controls.
 - **FR-150** ✅ Badges: First Drop, Three's a Charm (3×), On-Time.
@@ -121,4 +121,5 @@
 - [x] Reward catalog, redemption API, admin/volunteer fulfillment queue, and donor redeem flow (FR-145).
 - [x] Badge listeners (First Drop, Three’s a Charm, On-Time) plus donor badge display (FR-150).
 - [x] Leaderboard API + MVP UI (FR-160) — donor/admin/volunteer snapshots live; needs deeper filtering + sponsor view.
+- [x] Referral capture + K-factor stats (FR-140 extension) — invites recorded, completions award bonus points, K-factor surfaced on admin dashboard.
 - [ ] Next-donation reminder service (FR-170) — pending.

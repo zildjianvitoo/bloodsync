@@ -30,6 +30,7 @@ import { RewardRedeemList } from "@/components/donor/reward-redeem-list";
 import { BadgeList } from "@/components/donor/badge-list";
 import { LeaderboardPanel } from "@/components/leaderboard/leaderboard-panel";
 import { ReminderOptIn } from "@/components/donor/reminder-opt-in";
+import { ReferralInviteCard } from "@/components/donor/referral-invite-card";
 
 const formSchema = z.object({
   eventId: z.string().min(1, "Select an event"),
@@ -504,6 +505,11 @@ function PostDonationExperience({ payload }: TicketDetailsProps) {
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-foreground">Next donation reminder</h4>
           <ReminderOptIn donorId={payload.donor.id} eventId={payload.event.id} />
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground">Refer a friend</h4>
+          <ReferralInviteCard donorId={payload.donor.id} eventId={payload.event.id} />
         </div>
 
         <div className="space-y-3">

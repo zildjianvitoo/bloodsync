@@ -6,6 +6,7 @@ import { broadcastEventQueue } from "@/lib/realtime/queue";
 import { getIO } from "@/lib/realtime/server";
 import { awardPointsOnce, POINT_RULES } from "@/lib/rewards/points";
 import { awardOnTimeBadge } from "@/lib/badges";
+import { markReferralAccepted } from "@/lib/referrals";
 
 const AVERAGE_SCREENING_MINUTES = 12;
 
@@ -218,6 +219,10 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
 
   await awardCheckInBonuses(donor.id, eventId);
   await awardOnTimeBadge(donor.id, updatedAppointment.slotTime, checkinTime);
+
+  if (updatedAppointment.donor?.referrals?.length) {
+    // placeholder to link acceptance by invite token if available
+  }
 
   return {
     ticket: {

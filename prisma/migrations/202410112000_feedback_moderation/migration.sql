@@ -1,0 +1,3 @@
+ALTER TABLE "Feedback" ADD COLUMN "status" TEXT NOT NULL DEFAULT 'PENDING';
+ALTER TABLE "Feedback" ADD COLUMN "moderatedAt" DATETIME;
+ALTER TABLE "Feedback" ADD COLUMN "moderatedBy" TEXT;

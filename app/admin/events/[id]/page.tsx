@@ -22,8 +22,12 @@ import { RewardCatalogAdmin } from "@/components/admin/reward-catalog";
 import { RewardRedemptionList } from "@/components/admin/reward-redemptions";
 import { listRewardItems, listEventRedemptions } from "@/lib/rewards/reward-items";
 import { listEventReminders } from "@/lib/reminders";
+import { getReferralStats, listEventReferrals } from "@/lib/referrals";
 import { LeaderboardPanel } from "@/components/leaderboard/leaderboard-panel";
 import { ReminderList } from "@/components/admin/reminder-list";
+import { ReferralList } from "@/components/admin/referral-list";
+import { FeedbackModerationPanel } from "@/components/admin/feedback-moderation";
+import { listFeedbackForModeration } from "@/lib/db/feedback";
 
 export const dynamic = "force-dynamic";
 
@@ -47,11 +51,14 @@ export default async function AdminEventDetail({
     notFound();
   }
 
-  const [queue, rewardItemsRaw, redemptionsRaw, remindersRaw] = await Promise.all([
+  const [queue, rewardItemsRaw, redemptionsRaw, remindersRaw, moderationRaw, referralStats, referralRecent] = await Promise.all([
     getEventQueue(id),
     listRewardItems(id, true),
     listEventRedemptions(id, 20),
     listEventReminders(id, 10),
+    listFeedbackForModeration(id, "PENDING", 10),
+    getReferralStats(id),
+    listEventReferrals(id, 10),
   ]);
   const kpis = queue ? calculateEventKpis(queue) : null;
 
@@ -105,6 +112,28 @@ export default async function AdminEventDetail({
       id: reminder.donor.id,
       name: reminder.donor.name,
     },
+  }));
+
+  const moderationQueue = moderationRaw.map((item) => ({
+    id: item.id,
+    comment: item.comment,
+    status: item.status,
+    createdAt: item.createdAt.toISOString(),
+    donor: item.donor
+      ? {
+          id: item.donor.id,
+          name: item.donor.name,
+        }
+      : null,
+  }));
+
+  const referralList = referralRecent.map((item) => ({
+    id: item.id,
+    inviteeEmail: item.inviteeEmail,
+    inviteSentAt: item.inviteSentAt.toISOString(),
+    status: item.status,
+    completedAt: item.completedAt ? item.completedAt.toISOString() : null,
+    referrer: item.referrer,
   }));
 
   const exportLinks = [
@@ -178,6 +207,26 @@ export default async function AdminEventDetail({
         </CardHeader>
         <CardContent>
           <ReminderList eventId={event.id} initialReminders={reminders} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Referral performance</CardTitle>
+          <CardDescription>Track invites and completed donations.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ReferralList eventId={event.id} stats={referralStats} initialReferrals={referralList} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Feedback moderation</CardTitle>
+          <CardDescription>Review donor comments before surfacing insights.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FeedbackModerationPanel eventId={event.id} initial={moderationQueue} />
         </CardContent>
       </Card>
 

@@ -50,6 +50,8 @@ model Donor {
   badges          Badge[]
   redemptions     Redemption[]
   reminders       Reminder[]
+  referrals       Referral[]       @relation("DonorReferrals")
+  referredByList  Referral[]       @relation("DonorReferralsTarget")
   teamMemberships TeamMember[]
   scheduleResponses SchedulePollResponse[]
   broadcasts      Broadcast[] @relation("ActorBroadcasts")
@@ -100,6 +102,9 @@ model Feedback {
   csat      Int
   nps       Int
   comment   String?
+  status    String   @default("PENDING")
+  moderatedAt DateTime?
+  moderatedBy String?
   createdAt DateTime @default(now())
 }
 
@@ -151,6 +156,21 @@ model Reminder {
   updatedAt DateTime @updatedAt
   donor     Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
   event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+}
+
+model Referral {
+  id          String   @id @default(cuid())
+  eventId     String
+  referrerId  String
+  inviteeId   String?
+  inviteeEmail String?
+  inviteSentAt DateTime @default(now())
+  acceptedAt  DateTime?
+  completedAt DateTime?
+  status      String    @default("INVITED")
+  event       Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  referrer    Donor     @relation("DonorReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  invitee     Donor?    @relation("DonorReferralsTarget", fields: [inviteeId], references: [id])
 }
 
 model Redemption {

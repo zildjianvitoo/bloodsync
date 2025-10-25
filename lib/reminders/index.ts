@@ -7,6 +7,7 @@ export type ReminderInput = {
   eventId?: string | null;
   remindOn: Date;
   channel?: string | null;
+  contactEmail?: string | null;
 };
 
 export async function scheduleReminder(input: ReminderInput) {
@@ -16,6 +17,7 @@ export async function scheduleReminder(input: ReminderInput) {
       eventId: input.eventId ?? null,
       remindOn: input.remindOn,
       channel: input.channel ?? null,
+      contactEmail: input.contactEmail ?? null,
     },
   });
 }
@@ -42,7 +44,11 @@ export async function listEventReminders(eventId: string, limit = 10) {
     },
     orderBy: { remindOn: "asc" },
     take: limit,
-    include: {
+    select: {
+      id: true,
+      remindOn: true,
+      status: true,
+      contactEmail: true,
       donor: {
         select: {
           id: true,
@@ -65,7 +71,11 @@ export async function findDueReminders(limit = 20) {
       remindOn: "asc",
     },
     take: limit,
-    include: {
+    select: {
+      id: true,
+      donorId: true,
+      eventId: true,
+      contactEmail: true,
       donor: {
         select: {
           id: true,

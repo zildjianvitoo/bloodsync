@@ -8,6 +8,7 @@ export type AdminReminder = {
   id: string;
   remindOn: string;
   status: string;
+  contactEmail?: string | null;
   donor: {
     id: string;
     name: string;
@@ -86,6 +87,9 @@ export function ReminderList({ eventId, initialReminders }: ReminderListProps) {
               <p className="text-xs text-muted-foreground">
                 Remind on {new Date(reminder.remindOn).toLocaleDateString()} · {reminder.status}
               </p>
+              {reminder.contactEmail ? (
+                <p className="text-xs text-muted-foreground">{reminder.contactEmail}</p>
+              ) : null}
             </div>
             <Button size="sm" variant="ghost" onClick={() => cancel(reminder.id)}>
               Cancel

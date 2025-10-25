@@ -152,6 +152,7 @@ model Reminder {
   remindOn  DateTime
   status    String   @default("SCHEDULED")
   channel   String?
+  contactEmail String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   donor     Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)

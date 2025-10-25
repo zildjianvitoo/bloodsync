@@ -6,6 +6,7 @@ const schema = z.object({
   donorId: z.string().min(1, "donorId is required"),
   eventId: z.string().optional(),
   remindInDays: z.coerce.number().int().min(1).max(365).default(90),
+  email: z.string().email("Valid email is required"),
 });
 
 export async function POST(request: Request) {
@@ -18,6 +19,8 @@ export async function POST(request: Request) {
       donorId: parsed.donorId,
       eventId: parsed.eventId,
       remindOn,
+      channel: "email",
+      contactEmail: parsed.email,
     });
 
     return NextResponse.json({ reminder }, { status: 201 });

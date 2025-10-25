@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const options = [
   { label: "In 60 days", days: 60 },
@@ -18,8 +19,13 @@ export function ReminderOptIn({ donorId, eventId }: ReminderOptInProps) {
   const [selected, setSelected] = useState(options[1]?.days ?? 90);
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
 
   async function submit() {
+    if (!email) {
+      setStatus("Please add an email so we can send the reminder.");
+      return;
+    }
     setPending(true);
     setStatus(null);
     try {
@@ -28,7 +34,7 @@ export function ReminderOptIn({ donorId, eventId }: ReminderOptInProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ donorId, eventId, remindInDays: selected }),
+        body: JSON.stringify({ donorId, eventId, remindInDays: selected, email }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({ error: "Failed to schedule reminder" }));
@@ -61,6 +67,13 @@ export function ReminderOptIn({ donorId, eventId }: ReminderOptInProps) {
           </Button>
         ))}
       </div>
+      <Input
+        type="email"
+        placeholder="Email address"
+        value={email}
+        disabled={pending}
+        onChange={(event) => setEmail(event.target.value)}
+      />
       <Button type="button" size="sm" onClick={submit} disabled={pending}>
         {pending ? "Saving…" : "Save reminder"}
       </Button>

@@ -4,6 +4,7 @@ import { advanceAppointmentForStation } from "@/lib/db/appointments";
 import { emitTelemetry } from "@/lib/telemetry";
 import { getIO } from "@/lib/realtime/server";
 import { broadcastEventQueue } from "@/lib/realtime/queue";
+import { awardPointsOnce, POINT_RULES } from "@/lib/rewards/points";
 
 export async function POST(
   request: Request,
@@ -36,6 +37,21 @@ export async function POST(
   }
 
   const { appointment, nextStatus, previousStatus } = result;
+
+  if (nextStatus === "DONE" && appointment.donorId) {
+    try {
+      await awardPointsOnce({
+        donorId: appointment.donorId,
+        eventId: station.eventId,
+        source: "COMPLETE",
+        value: POINT_RULES.COMPLETE,
+        note: "Donation completed",
+        awardKey: `complete:${station.eventId}:${appointment.donorId}`,
+      });
+    } catch (error) {
+      console.error("Failed to award completion points", error);
+    }
+  }
 
   emitTelemetry({
     name: "appointment:advanced",

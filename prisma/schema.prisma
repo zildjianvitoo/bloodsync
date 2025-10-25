@@ -18,6 +18,7 @@ model Event {
   stations     Station[]
   feedback     Feedback[]
   rewardItems  RewardItem[]
+  points       Point[]
   schedulePolls SchedulePoll[]
   broadcasts   Broadcast[]
   createdAt    DateTime      @default(now())
@@ -104,9 +105,13 @@ model Point {
   id        String   @id @default(cuid())
   donorId   String
   donor     Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
   value     Int
   /// Point source values: SIGN_UP | ATTEND | COMPLETE | REFERRAL
   source    String
+  note      String?
+  awardKey  String?  @unique
   createdAt DateTime @default(now())
 }
 

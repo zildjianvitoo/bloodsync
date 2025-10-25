@@ -4,6 +4,7 @@ import type { EventQueuePayload } from "@/lib/db/queue";
 import { getEventQueue } from "@/lib/db/queue";
 import { broadcastEventQueue } from "@/lib/realtime/queue";
 import { getIO } from "@/lib/realtime/server";
+import { awardPointsOnce, POINT_RULES } from "@/lib/rewards/points";
 
 const AVERAGE_SCREENING_MINUTES = 12;
 
@@ -212,6 +213,8 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
 
   await broadcastEventQueue(eventId, queue);
 
+  await awardCheckInBonuses(donor.id, eventId);
+
   return {
     ticket: {
       appointmentId: updatedAppointment.id,
@@ -232,3 +235,28 @@ export async function checkInDonor(eventId: string, donorToken: string): Promise
 }
 
 export { CheckInError };
+
+async function awardCheckInBonuses(donorId: string, eventId: string) {
+  try {
+    await Promise.all([
+      awardPointsOnce({
+        donorId,
+        eventId,
+        source: "SIGN_UP",
+        value: POINT_RULES.SIGN_UP,
+        note: "Registered for the drive",
+        awardKey: `signup:${eventId}:${donorId}`,
+      }),
+      awardPointsOnce({
+        donorId,
+        eventId,
+        source: "ATTEND",
+        value: POINT_RULES.ATTEND,
+        note: "Checked in at the event",
+        awardKey: `attend:${eventId}:${donorId}`,
+      }),
+    ]);
+  } catch (error) {
+    console.error("Failed to award check-in points", error);
+  }
+}

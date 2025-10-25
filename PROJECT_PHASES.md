@@ -81,7 +81,7 @@
   5. Integrate push/in-app turn notifications (FR-080) with fallback banners.
   6. Launch CSAT+NPS survey form (FR-110) and schedule poll (FR-120) using Shadcn form primitives for consistency.
 
-## Phase 3 — Operations Console (Week 3)
+## Phase 3 — Operations Console (Week 3) ✅
 
 - **Objectives**: Equip volunteers and organizers with control interfaces.
 - **Deliverables**: Volunteer console, organizer broadcast tool, KPI dashboard.
@@ -92,6 +92,12 @@
   4. Enable organizer broadcast endpoint/UI (FR-070) with kiosk/device fan-out.
   5. Construct real-time KPI dashboard (FR-090) backed by Socket.IO updates.
   6. Support CSV exports for check-ins, attendance, feedback (FR-100).
+
+### Phase 3 completion notes
+
+- Volunteer console, kiosk surfaces, auto no-show sweep, broadcasts, and KPI dashboards are live in production code (Ops can already run an event with these tools).
+- CSV exports for check-ins/attendance/feedback are wired to `/api/export.csv`, aligning with FR-100.
+- Outstanding polish items (e.g., volunteer queue deep-link) are tracked as nice-to-haves but not blocking the ✅.
 
 ## Phase 4 — Engagement & Gamification (Week 4)
 
@@ -104,6 +110,12 @@
   4. Ship team & individual leaderboard views (FR-160, optional toggle for MVP).
   5. Set up next-donation reminder scheduling with cooldown rules (FR-170).
   6. Capture referral K-factor metrics and hook into KPI dashboard.
+
+### Phase 4 kickoff focus
+
+- Ship the points + rewards ledger (FR-140/145) so donors can earn/redeem snacks and merch safely.
+- Implement badge issuance listeners (FR-150) and prep leaderboard scaffolding for teams/individuals (FR-160).
+- Build the reminder scheduler + eligibility rules (FR-170) to nudge donors post-event and surface referral/K-factor hooks.
 
 ## Phase 5 — Hardening & Compliance (Week 5)
 

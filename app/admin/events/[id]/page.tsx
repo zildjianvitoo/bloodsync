@@ -18,6 +18,9 @@ import { DeleteEventButton } from "@/components/events/delete-event-button";
 import { getEventQueue } from "@/lib/db/queue";
 import { calculateEventKpis } from "@/lib/kpi";
 import { KpiDashboard } from "@/components/admin/kpi-dashboard";
+import { RewardCatalogAdmin } from "@/components/admin/reward-catalog";
+import { RewardRedemptionList } from "@/components/admin/reward-redemptions";
+import { listRewardItems, listEventRedemptions } from "@/lib/rewards/reward-items";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +44,11 @@ export default async function AdminEventDetail({
     notFound();
   }
 
-  const queue = await getEventQueue(id);
+  const [queue, rewardItemsRaw, redemptionsRaw] = await Promise.all([
+    getEventQueue(id),
+    listRewardItems(id, true),
+    listEventRedemptions(id, 20),
+  ]);
   const kpis = queue ? calculateEventKpis(queue) : null;
 
   const activeStations = event.stations.filter((station) => station.isActive).length;
@@ -59,6 +66,50 @@ export default async function AdminEventDetail({
       checkinAt: checkin?.timestamp ?? null,
     })),
   }));
+
+  const rewardItems = rewardItemsRaw.map((item) => ({
+    id: item.id,
+    name: item.name,
+    cost: item.cost,
+    stock: item.stock,
+    isActive: item.isActive,
+    sponsorId: item.sponsorId,
+    createdAt: item.createdAt.toISOString(),
+  }));
+
+  const rewardRedemptions = redemptionsRaw.map((entry) => ({
+    id: entry.id,
+    status: entry.status as "RESERVED" | "FULFILLED" | "CANCELLED",
+    cost: entry.cost,
+    createdAt: entry.createdAt.toISOString(),
+    fulfilledBy: entry.fulfilledBy,
+    donor: {
+      id: entry.donor?.id ?? "",
+      name: entry.donor?.name ?? "Unknown donor",
+    },
+    rewardItem: {
+      id: entry.rewardItem.id,
+      name: entry.rewardItem.name,
+    },
+  }));
+
+  const exportLinks = [
+    {
+      label: "Check-ins",
+      href: `/api/export.csv?type=checkins&eventId=${event.id}`,
+      description: "Raw check-in records with timestamps",
+    },
+    {
+      label: "Attendance",
+      href: `/api/export.csv?type=attendance&eventId=${event.id}`,
+      description: "Appointment roster with final statuses",
+    },
+    {
+      label: "Feedback",
+      href: `/api/export.csv?type=feedback&eventId=${event.id}`,
+      description: "CSAT + NPS submissions",
+    },
+  ];
 
   return (
     <>
@@ -93,6 +144,26 @@ export default async function AdminEventDetail({
         </CardHeader>
         <CardContent>
           <AddStationForm eventId={event.id} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Reward catalog</CardTitle>
+          <CardDescription>Manage snack + merch inventory for this drive.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RewardCatalogAdmin eventId={event.id} initialItems={rewardItems} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Redemption queue</CardTitle>
+          <CardDescription>Mark perks as fulfilled or cancel if inventory changes.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RewardRedemptionList eventId={event.id} initialRedemptions={rewardRedemptions} />
         </CardContent>
       </Card>
 
@@ -133,6 +204,27 @@ export default async function AdminEventDetail({
               Stations
             </h2>
             <StationsPanel stations={stationPanelData} mode="admin" />
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Data exports
+            </h2>
+            <div className="grid gap-3 md:grid-cols-3">
+              {exportLinks.map((exportItem) => (
+                <Card key={exportItem.label} className="border-border/70 bg-card/80 shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold">{exportItem.label}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm text-muted-foreground">
+                    <p>{exportItem.description}</p>
+                    <Button asChild size="sm" className="w-full" variant="secondary">
+                      <a href={exportItem.href}>Download CSV</a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </section>
         </CardContent>
       </Card>

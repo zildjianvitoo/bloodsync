@@ -144,24 +144,27 @@ async function main() {
     data: [
       {
         donorId: alice.id,
+        eventId: event.id,
         value: 20,
         source: "ATTEND",
       },
       {
         donorId: alice.id,
+        eventId: event.id,
         value: 50,
         source: "COMPLETE",
       },
       {
         donorId: bob.id,
+        eventId: event.id,
         value: 5,
         source: "SIGN_UP",
       },
-      { donorId: chandra.id, value: 5, source: "SIGN_UP" },
-      { donorId: dina.id, value: 5, source: "SIGN_UP" },
-      { donorId: erin.id, value: 5, source: "SIGN_UP" },
-      { donorId: farid.id, value: 5, source: "SIGN_UP" },
-      { donorId: gloria.id, value: 5, source: "SIGN_UP" },
+      { donorId: chandra.id, eventId: event.id, value: 5, source: "SIGN_UP" },
+      { donorId: dina.id, eventId: event.id, value: 5, source: "SIGN_UP" },
+      { donorId: erin.id, eventId: event.id, value: 5, source: "SIGN_UP" },
+      { donorId: farid.id, eventId: event.id, value: 5, source: "SIGN_UP" },
+      { donorId: gloria.id, eventId: event.id, value: 5, source: "SIGN_UP" },
     ],
   });
 

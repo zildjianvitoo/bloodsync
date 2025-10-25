@@ -25,6 +25,8 @@ import { subscribeRealtime } from "@/lib/realtime/client";
 import { pushInAppNotification } from "@/lib/realtime/in-app";
 import { FeedbackSurvey } from "@/components/donor/feedback-survey";
 import { SchedulePollCard } from "@/components/donor/schedule-poll-card";
+import { RewardBalanceCard } from "@/components/donor/reward-balance-card";
+import { RewardRedeemList } from "@/components/donor/reward-redeem-list";
 
 const formSchema = z.object({
   eventId: z.string().min(1, "Select an event"),
@@ -467,6 +469,7 @@ function TicketDetails({ payload }: TicketDetailsProps) {
 function PostDonationExperience({ payload }: TicketDetailsProps) {
   const status = payload.ticket.status;
   const canSubmitFeedback = status === "DONOR" || status === "DONE";
+  const [rewardRefreshKey, setRewardRefreshKey] = useState(0);
 
   return (
     <section className="space-y-5 rounded-2xl border border-border/70 bg-background/70 p-5">
@@ -493,6 +496,16 @@ function PostDonationExperience({ payload }: TicketDetailsProps) {
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-foreground">Schedule poll</h4>
           <SchedulePollCard eventId={payload.event.id} donorId={payload.donor.id} />
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground">Rewards</h4>
+          <RewardBalanceCard donorId={payload.donor.id} refreshKey={rewardRefreshKey} />
+          <RewardRedeemList
+            donorId={payload.donor.id}
+            eventId={payload.event.id}
+            onRedeemed={() => setRewardRefreshKey((key) => key + 1)}
+          />
         </div>
       </div>
     </section>

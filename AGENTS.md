@@ -122,4 +122,5 @@
 - [x] Badge listeners (First Drop, Three’s a Charm, On-Time) plus donor badge display (FR-150).
 - [x] Leaderboard API + MVP UI (FR-160) — donor/admin/volunteer snapshots live; needs deeper filtering + sponsor view.
 - [x] Referral capture + K-factor stats (FR-140 extension) — invites recorded, completions award bonus points, K-factor surfaced on admin dashboard.
+- [x] Reminder delivery hook — `/api/jobs/reminders/run` processes due reminders; admin UI can send/cancel.
 - [ ] Next-donation reminder service (FR-170) — pending.

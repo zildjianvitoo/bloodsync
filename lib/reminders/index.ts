@@ -52,3 +52,42 @@ export async function listEventReminders(eventId: string, limit = 10) {
     },
   });
 }
+
+export async function findDueReminders(limit = 20) {
+  return prisma.reminder.findMany({
+    where: {
+      status: "SCHEDULED",
+      remindOn: {
+        lte: new Date(),
+      },
+    },
+    orderBy: {
+      remindOn: "asc",
+    },
+    take: limit,
+    include: {
+      donor: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      event: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+}
+
+export async function markReminderSent(id: string) {
+  return prisma.reminder.update({
+    where: { id },
+    data: {
+      status: "SENT",
+      updatedAt: new Date(),
+    },
+  });
+}

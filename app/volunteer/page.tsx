@@ -14,6 +14,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { StationsPanel } from "@/components/stations/stations-panel";
 import { TopNav } from "@/components/navigation/top-nav";
 import { RewardQueuePanel } from "@/components/volunteer/reward-queue-panel";
+import { LeaderboardPanel } from "@/components/leaderboard/leaderboard-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,11 @@ export default async function VolunteerPage() {
               <div className="mt-2 text-xl font-semibold text-foreground">{item.value}</div>
             </GlassCard>
           ))}
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-2">
+          <LeaderboardPanel scope="individual" title="Donor points" />
+          <LeaderboardPanel scope="team" title="Team standings" />
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">

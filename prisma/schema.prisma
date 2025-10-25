@@ -19,6 +19,7 @@ model Event {
   feedback     Feedback[]
   rewardItems  RewardItem[]
   points       Point[]
+  reminders    Reminder[]
   schedulePolls SchedulePoll[]
   broadcasts   Broadcast[]
   createdAt    DateTime      @default(now())
@@ -48,6 +49,7 @@ model Donor {
   points          Point[]
   badges          Badge[]
   redemptions     Redemption[]
+  reminders       Reminder[]
   teamMemberships TeamMember[]
   scheduleResponses SchedulePollResponse[]
   broadcasts      Broadcast[] @relation("ActorBroadcasts")
@@ -136,6 +138,19 @@ model RewardItem {
   redemptions Redemption[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model Reminder {
+  id        String   @id @default(cuid())
+  donorId   String
+  eventId   String?
+  remindOn  DateTime
+  status    String   @default("SCHEDULED")
+  channel   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  donor     Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
 }
 
 model Redemption {

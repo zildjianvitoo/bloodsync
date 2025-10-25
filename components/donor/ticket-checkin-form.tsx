@@ -28,6 +28,8 @@ import { SchedulePollCard } from "@/components/donor/schedule-poll-card";
 import { RewardBalanceCard } from "@/components/donor/reward-balance-card";
 import { RewardRedeemList } from "@/components/donor/reward-redeem-list";
 import { BadgeList } from "@/components/donor/badge-list";
+import { LeaderboardPanel } from "@/components/leaderboard/leaderboard-panel";
+import { ReminderOptIn } from "@/components/donor/reminder-opt-in";
 
 const formSchema = z.object({
   eventId: z.string().min(1, "Select an event"),
@@ -500,6 +502,11 @@ function PostDonationExperience({ payload }: TicketDetailsProps) {
         </div>
 
         <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground">Next donation reminder</h4>
+          <ReminderOptIn donorId={payload.donor.id} eventId={payload.event.id} />
+        </div>
+
+        <div className="space-y-3">
           <h4 className="text-sm font-semibold text-foreground">Badges unlocked</h4>
           <BadgeList donorId={payload.donor.id} />
         </div>
@@ -512,6 +519,11 @@ function PostDonationExperience({ payload }: TicketDetailsProps) {
             eventId={payload.event.id}
             onRedeemed={() => setRewardRefreshKey((key) => key + 1)}
           />
+        </div>
+
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground">Event leaderboard snapshot</h4>
+          <LeaderboardPanel scope="individual" eventId={payload.event.id} limit={3} />
         </div>
       </div>
     </section>

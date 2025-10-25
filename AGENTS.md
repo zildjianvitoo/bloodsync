@@ -46,7 +46,7 @@
 - **FR-145** ✅ Reward redemption: donors exchange accumulated points for event perks (e.g., snacks, merch) with inventory and eligibility controls.
 - **FR-150** ✅ Badges: First Drop, Three's a Charm (3×), On-Time.
 - **FR-160** Teams & leaderboard (could-have) for team and individual rankings.
-- **FR-170** Next-donation reminder push when donor becomes eligible again.
+- **FR-170** ✅ Next-donation reminder push when donor becomes eligible again (reminder opt-in + scheduling queue live; outbound send hook pending).
 - **FR-180** Consent & Terms of Service with minimum data capture (hashed contact info).
 - **FR-190** Admin management: events, stations, role-based access.
 - **FR-200** Audit trail logging key status changes and critical actions.
@@ -120,5 +120,5 @@
 - [x] Points ledger wired to check-in/completion events with donor-facing balance view (FR-140).
 - [x] Reward catalog, redemption API, admin/volunteer fulfillment queue, and donor redeem flow (FR-145).
 - [x] Badge listeners (First Drop, Three’s a Charm, On-Time) plus donor badge display (FR-150).
-- [ ] Teams & leaderboard scaffolding (FR-160) — pending.
+- [x] Leaderboard API + MVP UI (FR-160) — donor/admin/volunteer snapshots live; needs deeper filtering + sponsor view.
 - [ ] Next-donation reminder service (FR-170) — pending.

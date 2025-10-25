@@ -21,6 +21,9 @@ import { KpiDashboard } from "@/components/admin/kpi-dashboard";
 import { RewardCatalogAdmin } from "@/components/admin/reward-catalog";
 import { RewardRedemptionList } from "@/components/admin/reward-redemptions";
 import { listRewardItems, listEventRedemptions } from "@/lib/rewards/reward-items";
+import { listEventReminders } from "@/lib/reminders";
+import { LeaderboardPanel } from "@/components/leaderboard/leaderboard-panel";
+import { ReminderList } from "@/components/admin/reminder-list";
 
 export const dynamic = "force-dynamic";
 
@@ -44,10 +47,11 @@ export default async function AdminEventDetail({
     notFound();
   }
 
-  const [queue, rewardItemsRaw, redemptionsRaw] = await Promise.all([
+  const [queue, rewardItemsRaw, redemptionsRaw, remindersRaw] = await Promise.all([
     getEventQueue(id),
     listRewardItems(id, true),
     listEventRedemptions(id, 20),
+    listEventReminders(id, 10),
   ]);
   const kpis = queue ? calculateEventKpis(queue) : null;
 
@@ -90,6 +94,16 @@ export default async function AdminEventDetail({
     rewardItem: {
       id: entry.rewardItem.id,
       name: entry.rewardItem.name,
+    },
+  }));
+
+  const reminders = remindersRaw.map((reminder) => ({
+    id: reminder.id,
+    remindOn: reminder.remindOn.toISOString(),
+    status: reminder.status,
+    donor: {
+      id: reminder.donor.id,
+      name: reminder.donor.name,
     },
   }));
 
@@ -159,11 +173,32 @@ export default async function AdminEventDetail({
 
       <Card>
         <CardHeader>
+          <CardTitle>Reminder queue</CardTitle>
+          <CardDescription>Upcoming next-donation nudges for this event.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ReminderList eventId={event.id} initialReminders={reminders} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Redemption queue</CardTitle>
           <CardDescription>Mark perks as fulfilled or cancel if inventory changes.</CardDescription>
         </CardHeader>
         <CardContent>
           <RewardRedemptionList eventId={event.id} initialRedemptions={rewardRedemptions} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Leaderboards</CardTitle>
+          <CardDescription>See which donors and teams are leading this drive.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <LeaderboardPanel scope="individual" eventId={event.id} title="Top donors" />
+          <LeaderboardPanel scope="team" eventId={event.id} title="Top teams" />
         </CardContent>
       </Card>
 
